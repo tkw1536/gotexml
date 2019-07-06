@@ -19,18 +19,6 @@ type RuneReader struct {
 	cache    rune
 }
 
-// ReaderPosition represents the position of the reader
-type ReaderPosition struct {
-	// current 0-based line
-	Line uint
-
-	// current 0-based column
-	Column uint
-
-	// true iff we are at the end of the input
-	EOF bool
-}
-
 // NewRuneReaderFromString creates a new RuneReader from a string
 func NewRuneReaderFromString(s string) *RuneReader {
 	return &RuneReader{
