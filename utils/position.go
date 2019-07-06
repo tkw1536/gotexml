@@ -11,3 +11,9 @@ type ReaderPosition struct {
 	// true iff we are at the end of the input
 	EOF bool
 }
+
+// ReaderRange represents a range within a read document
+type ReaderRange struct {
+	Start ReaderPosition
+	End   ReaderPosition
+}

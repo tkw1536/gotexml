@@ -9,10 +9,9 @@ import (
 
 func TestBibString_Copy(t *testing.T) {
 	type fields struct {
-		kind  BibStringKind
-		value string
-		start utils.ReaderPosition
-		end   utils.ReaderPosition
+		kind   BibStringKind
+		value  string
+		source utils.ReaderRange
 	}
 	tests := []struct {
 		name   string
@@ -22,22 +21,25 @@ func TestBibString_Copy(t *testing.T) {
 		{"copy a bibstring returns a copy", fields{
 			kind:  BibStringOther,
 			value: "something",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 1, EOF: true},
+			},
 		}, &BibString{
 			kind:  BibStringOther,
 			value: "something",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 1, EOF: true},
+			},
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			bs := &BibString{
-				kind:  tt.fields.kind,
-				value: tt.fields.value,
-				start: tt.fields.start,
-				end:   tt.fields.end,
+				kind:   tt.fields.kind,
+				value:  tt.fields.value,
+				source: tt.fields.source,
 			}
 			if got := bs.Copy(); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("BibString.Copy() = %v, want %v", got, tt.want)
@@ -76,61 +78,80 @@ func TestBibString_Evaluate(t *testing.T) {
 		{"evaluating other bibstring", &BibString{
 			kind:  BibStringOther,
 			value: "something",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			},
 		}, map[string]string{"something": "other"}, true, &BibString{
 			kind:  BibStringOther,
 			value: "something",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			},
 		}},
 
 		{"evaluating literal bibstring with valid context", &BibString{
 			kind:  BibStringLiteral,
 			value: "something",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
-		}, map[string]string{"something": "other"}, true, &BibString{
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			}}, map[string]string{"something": "other"}, true, &BibString{
 			kind:  BibStringEvaluated,
 			value: "other",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			},
 		}},
 
 		{"evaluating literal bibstring with invalid context", &BibString{
 			kind:  BibStringLiteral,
 			value: "something",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			},
 		}, nil, false, &BibString{
 			kind:  BibStringLiteral,
 			value: "something",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			},
 		}},
 
 		{"evaluating quoted bibstring", &BibString{
 			kind:  BibStringQuote,
 			value: "something",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			},
 		}, map[string]string{"something": "other"}, true, &BibString{
 			kind:  BibStringQuote,
 			value: "something",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			},
 		}},
 
 		{"evaluating evaluated bibstring", &BibString{
 			kind:  BibStringEvaluated,
 			value: "something",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			},
 		}, map[string]string{"something": "other"}, true, &BibString{
 			kind:  BibStringEvaluated,
 			value: "something",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			},
 		}},
 	}
 	for _, tt := range tests {
@@ -156,19 +177,22 @@ func TestBibString_Append(t *testing.T) {
 		{"adding two strings", &BibString{
 			kind:  BibStringQuote,
 			value: "hello \n",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 2, Column: 0, EOF: false},
-		}, &BibString{
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: false},
+			}}, &BibString{
 			kind:  BibStringQuote,
 			value: "world\n",
-			start: utils.ReaderPosition{Line: 2, Column: 1, EOF: false},
-			end:   utils.ReaderPosition{Line: 3, Column: 0, EOF: true},
-		}, &BibString{
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 2, Column: 1, EOF: false},
+				End:   utils.ReaderPosition{Line: 3, Column: 0, EOF: true},
+			}}, &BibString{
 			kind:  BibStringEvaluated,
 			value: "hello \nworld\n",
-			start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-			end:   utils.ReaderPosition{Line: 3, Column: 0, EOF: true},
-		}},
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 3, Column: 0, EOF: true},
+			}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

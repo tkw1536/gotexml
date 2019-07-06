@@ -12,8 +12,7 @@ type BibString struct {
 	value string        // the value of this bibstring
 
 	// range of this token inside the source file
-	start utils.ReaderPosition
-	end   utils.ReaderPosition
+	source utils.ReaderRange
 }
 
 // BibStringKind represents the specific type of BibStrings that can occur
@@ -31,10 +30,9 @@ const (
 func (bs *BibString) Copy() *BibString {
 	// TODO: Check if this is used
 	return &BibString{
-		kind:  bs.kind,
-		value: bs.value,
-		start: bs.start,
-		end:   bs.end,
+		kind:   bs.kind,
+		value:  bs.value,
+		source: bs.source,
 	}
 }
 
@@ -46,6 +44,11 @@ func (bs *BibString) Kind() BibStringKind {
 // Value gets the value of this BibString
 func (bs *BibString) Value() string {
 	return bs.value
+}
+
+// Source returns the source of this BibString
+func (bs *BibString) Source() utils.ReaderRange {
+	return bs.source
 }
 
 // NormalizeValue normalizes the value of this BibString
@@ -75,5 +78,5 @@ func (bs *BibString) Evaluate(context map[string]string) bool {
 func (bs *BibString) Append(other *BibString) {
 	bs.kind = BibStringEvaluated
 	bs.value += other.value
-	bs.end = other.end
+	bs.source.End = other.source.End
 }
