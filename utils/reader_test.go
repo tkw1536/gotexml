@@ -292,38 +292,43 @@ func TestRuneReader_ReadUnreadPeekEat(t *testing.T) {
 
 func TestRuneReader_ReadWhile(t *testing.T) {
 	tests := []struct {
-		name      string
-		f         func(r rune) bool
-		wantS     string
-		wantStart ReaderPosition
-		wantEnd   ReaderPosition
+		name    string
+		f       func(r rune) bool
+		wantS   string
+		wantLoc ReaderRange
 	}{
 		{
 			"read nothing",
 			func(r rune) bool { return false },
 			"",
-			ReaderPosition{0, 0, false},
-			ReaderPosition{0, 0, false},
+			ReaderRange{
+				ReaderPosition{0, 0, false},
+				ReaderPosition{0, 0, false},
+			},
 		},
 		{
 			"read letters",
 			func(r rune) bool { return (r >= 'a' && r <= 'z') },
 			"line",
-			ReaderPosition{0, 0, false},
-			ReaderPosition{0, 3, false},
+			ReaderRange{
+				ReaderPosition{0, 0, false},
+				ReaderPosition{0, 3, false},
+			},
 		},
 		{
 			"read until the end",
 			func(r rune) bool { return true },
 			"line 1\nline 2\nline 3\nline 4\nline 5\ralso\r\rstill\n\nline 7\n",
-			ReaderPosition{0, 0, false},
-			ReaderPosition{7, 0, true},
+			ReaderRange{
+				ReaderPosition{0, 0, false},
+				ReaderPosition{7, 0, true},
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			raw := makeTestReader()
-			gotS, gotStart, gotEnd, err := raw.ReadWhile(tt.f)
+			gotS, gotLoc, err := raw.ReadWhile(tt.f)
 			if (err != nil) != false {
 				t.Errorf("RuneReader.ReadWhile() error = %v, wantErr %v", err, false)
 				return
@@ -331,11 +336,8 @@ func TestRuneReader_ReadWhile(t *testing.T) {
 			if gotS != tt.wantS {
 				t.Errorf("RuneReader.ReadWhile() gotS = %v, want %v", gotS, tt.wantS)
 			}
-			if !reflect.DeepEqual(gotStart, tt.wantStart) {
-				t.Errorf("RuneReader.ReadWhile() gotStart = %v, want %v", gotStart, tt.wantStart)
-			}
-			if !reflect.DeepEqual(gotEnd, tt.wantEnd) {
-				t.Errorf("RuneReader.ReadWhile() gotEnd = %v, want %v", gotEnd, tt.wantEnd)
+			if !reflect.DeepEqual(gotLoc, tt.wantLoc) {
+				t.Errorf("RuneReader.ReadWhile() gotLoc = %v, want %v", gotLoc, tt.wantLoc)
 			}
 		})
 	}
@@ -343,39 +345,44 @@ func TestRuneReader_ReadWhile(t *testing.T) {
 
 func TestRuneReader_ReadWhileMatch(t *testing.T) {
 	tests := []struct {
-		name      string
-		re        *regexp.Regexp
-		wantS     string
-		wantStart ReaderPosition
-		wantEnd   ReaderPosition
+		name    string
+		re      *regexp.Regexp
+		wantS   string
+		wantLoc ReaderRange
 	}{
 		{
 			"read nothing",
 			regexp.MustCompile("^$"),
 			"",
-			ReaderPosition{0, 0, false},
-			ReaderPosition{0, 0, false},
+			ReaderRange{
+				ReaderPosition{0, 0, false},
+				ReaderPosition{0, 0, false},
+			},
 		},
 		{
 			"read letters",
 			regexp.MustCompile("^[aA-zZ]+$"),
 			"line",
-			ReaderPosition{0, 0, false},
-			ReaderPosition{0, 3, false},
+			ReaderRange{
+				ReaderPosition{0, 0, false},
+				ReaderPosition{0, 3, false},
+			},
 		},
 		{
 			"read until the end",
 			regexp.MustCompile(".*"),
 			"line 1\nline 2\nline 3\nline 4\nline 5\ralso\r\rstill\n\nline 7\n",
-			ReaderPosition{0, 0, false},
-			ReaderPosition{7, 0, true},
+			ReaderRange{
+				ReaderPosition{0, 0, false},
+				ReaderPosition{7, 0, true},
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			raw := makeTestReader()
 
-			gotS, gotStart, gotEnd, err := raw.ReadWhileMatch(tt.re)
+			gotS, gotLoc, err := raw.ReadWhileMatch(tt.re)
 			if (err != nil) != false {
 				t.Errorf("RuneReader.ReadWhileMatch() error = %v, wantErr %v", err, false)
 				return
@@ -383,11 +390,8 @@ func TestRuneReader_ReadWhileMatch(t *testing.T) {
 			if gotS != tt.wantS {
 				t.Errorf("RuneReader.ReadWhileMatch() gotS = %v, want %v", gotS, tt.wantS)
 			}
-			if !reflect.DeepEqual(gotStart, tt.wantStart) {
-				t.Errorf("RuneReader.ReadWhileMatch() gotStart = %v, want %v", gotStart, tt.wantStart)
-			}
-			if !reflect.DeepEqual(gotEnd, tt.wantEnd) {
-				t.Errorf("RuneReader.ReadWhileMatch() gotEnd = %v, want %v", gotEnd, tt.wantEnd)
+			if !reflect.DeepEqual(gotLoc, tt.wantLoc) {
+				t.Errorf("RuneReader.ReadWhileMatch() gotLoc = %v, want %v", gotLoc, tt.wantLoc)
 			}
 		})
 	}

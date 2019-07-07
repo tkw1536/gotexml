@@ -46,21 +46,22 @@ func (bf *BibFile) readLiteral() (lit BibString, err error) {
 
 	// iterate over sequential non-space sequences
 	var cache string
+	var source utils.ReaderRange
 	for isNotSpecialLiteral(char) {
 		// add spaces from the previous iteration
 		lit.value += cache + string(char)
 
 		// add the next non-space sequence
-		cache, _, _, err = bf.Reader.ReadWhile(isNotSpecialSpaceLiteral)
+		cache, _, err = bf.Reader.ReadWhile(isNotSpecialSpaceLiteral)
 		if err != nil {
 			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", bf.Reader.GetPosition())
 			return
 		}
 		lit.value += cache
-		lit.source.End = bf.Reader.GetPosition()
 
 		// read the next batch of spaces
-		cache, _, _, err = bf.Reader.ReadWhile(unicode.IsSpace)
+		cache, source, err = bf.Reader.ReadWhile(unicode.IsSpace)
+		lit.source.End = source.Start
 		if err != nil {
 			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", bf.Reader.GetPosition())
 			return
