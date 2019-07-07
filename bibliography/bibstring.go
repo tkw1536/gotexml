@@ -23,6 +23,7 @@ const (
 	BibStringOther     BibStringKind = ""
 	BibStringLiteral   BibStringKind = "LITERAL"
 	BibStringQuote     BibStringKind = "QUOTE"
+	BibStringBracket   BibStringKind = "BRACKET"
 	BibStringEvaluated BibStringKind = "EVALUATED"
 )
 

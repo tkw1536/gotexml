@@ -20,6 +20,11 @@ func (bt *BibTag) Content() []BibString {
 	return bt.content
 }
 
+// Source returns the source of this BibTag
+func (bt *BibTag) Source() utils.ReaderRange {
+	return bt.source
+}
+
 // Value returns the singular value of this BibString or panic()s
 func (bt *BibTag) Value() BibString {
 	if len(bt.content) != 1 {
@@ -58,39 +63,3 @@ func (bt *BibTag) Evaluate(context map[string]string) (failed []*BibString) {
 	bt.content = []BibString{evaluated}
 	return
 }
-
-/*
-
-# evaluates the content of this BiBTag
-# FAILS if this Tag is already evaluated
-# returns a list of items which have failed to evaluate
-sub evaluate {
-  my ($self, %context) = @_;
-
-  my @failed = ();
-
-  # if we have a name, we need to normalize it
-  $$self{name}->normalizeValue if defined($$self{name});
-
-  # we need to expand the value and iterate over it
-  my @content = @{ $$self{content} };
-  return unless scalar(@content) > 0;
-
-  my $item = shift(@content);
-  push(@failed, $item->copy) unless $item->evaluate(%context);
-
-  # evaluate and append each content item
-  # from the ones that we have
-  # DOES NOT DO ANY TYPE CHECKING
-  my $cont;
-  foreach $cont (@content) {
-    push(@failed, $cont) unless $cont->evaluate(%context);
-    $item->append($cont);
-  }
-
-  # and set the new content
-  $$self{content} = $item;
-
-  return @failed;
-}
-*/

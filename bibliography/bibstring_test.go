@@ -91,6 +91,22 @@ func TestBibString_Evaluate(t *testing.T) {
 			},
 		}},
 
+		{"evaluating bracket bibstring", &BibString{
+			kind:  BibStringBracket,
+			value: "something",
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			},
+		}, map[string]string{"something": "other"}, true, &BibString{
+			kind:  BibStringBracket,
+			value: "something",
+			source: utils.ReaderRange{
+				Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
+			},
+		}},
+
 		{"evaluating literal bibstring with valid context", &BibString{
 			kind:  BibStringLiteral,
 			value: "something",
