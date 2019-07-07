@@ -33,8 +33,8 @@ func NewRuneReaderFromReader(rd io.Reader) *RuneReader {
 	}
 }
 
-// GetPosition returns the current position of the reader
-func (raw *RuneReader) GetPosition() ReaderPosition {
+// Position returns the current position of the reader
+func (raw *RuneReader) Position() ReaderPosition {
 	return raw.position
 }
 
@@ -125,7 +125,7 @@ func (raw *RuneReader) Eat() (err error) {
 // Peek peeks into the next character
 func (raw *RuneReader) Peek() (r rune, pos ReaderPosition, err error) {
 	// read the current position
-	pos = raw.GetPosition()
+	pos = raw.Position()
 
 	// peek the next raw character
 	r, err = raw.peekRaw()

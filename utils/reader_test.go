@@ -96,7 +96,7 @@ func TestRuneReader_Read(t *testing.T) {
 	for i, tt := range testOutput {
 		t.Run(fmt.Sprintf("read character %d", i), func(t *testing.T) {
 			// read the current position
-			gotPos := raw.GetPosition()
+			gotPos := raw.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
@@ -125,7 +125,7 @@ func TestRuneReader_PeekEat(t *testing.T) {
 		t.Run(fmt.Sprintf("peek + eat character %d", i), func(t *testing.T) {
 
 			// read the current position
-			gotPos := raw.GetPosition()
+			gotPos := raw.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
@@ -145,7 +145,7 @@ func TestRuneReader_PeekEat(t *testing.T) {
 			}
 
 			// read the current position (again)
-			gotPos = raw.GetPosition()
+			gotPos = raw.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
@@ -170,7 +170,7 @@ func TestRuneReader_ReadUnread(t *testing.T) {
 		t.Run(fmt.Sprintf("read + unread + reread character %d", i), func(t *testing.T) {
 
 			// read the current position
-			gotPos := raw.GetPosition()
+			gotPos := raw.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
@@ -197,7 +197,7 @@ func TestRuneReader_ReadUnread(t *testing.T) {
 			}
 
 			// read the current position (again)
-			gotPos = raw.GetPosition()
+			gotPos = raw.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
@@ -227,7 +227,7 @@ func TestRuneReader_ReadUnreadPeekEat(t *testing.T) {
 	for i, tt := range testOutput {
 		t.Run(fmt.Sprintf("read + unread + peek + eat character %d", i), func(t *testing.T) {
 			// read the current position
-			gotPos := raw.GetPosition()
+			gotPos := raw.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
@@ -254,7 +254,7 @@ func TestRuneReader_ReadUnreadPeekEat(t *testing.T) {
 			}
 
 			// read the current position (again)
-			gotPos = raw.GetPosition()
+			gotPos = raw.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
@@ -274,7 +274,7 @@ func TestRuneReader_ReadUnreadPeekEat(t *testing.T) {
 			}
 
 			// read the current position (again again)
-			gotPos = raw.GetPosition()
+			gotPos = raw.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
@@ -434,7 +434,7 @@ func TestRuneReader_EatWhile(t *testing.T) {
 				t.Errorf("RuneReader.EatWhile() count = %v, wantCount %v", gotCount, tt.wantCount)
 			}
 
-			gotPos := raw.GetPosition()
+			gotPos := raw.Position()
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPos = %v, want %v", gotPos, tt.wantPos)
 			}
@@ -481,7 +481,7 @@ func TestRuneReader_EatWhileMatch(t *testing.T) {
 				t.Errorf("RuneReader.EatWhileMatch() gotCount = %v, want %v", gotCount, tt.wantCount)
 			}
 
-			gotPos := raw.GetPosition()
+			gotPos := raw.Position()
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPos = %v, want %v", gotPos, tt.wantPos)
 			}

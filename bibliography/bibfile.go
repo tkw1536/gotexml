@@ -30,13 +30,13 @@ func (bf *BibFile) Parse() error {
 // skips spaces after the read literal
 func (bf *BibFile) readLiteral() (lit BibString, err error) {
 
-	lit.source.Start = bf.Reader.GetPosition()
-	lit.source.End = bf.Reader.GetPosition()
+	lit.source.Start = bf.Reader.Position()
+	lit.source.End = lit.source.Start
 
 	// read the next character or bail out when an error or EOF occurs
 	char, pos, err := bf.Reader.Read()
 	if err != nil {
-		err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", bf.Reader.GetPosition())
+		err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", bf.Reader.Position())
 		return
 	}
 	if pos.EOF {
@@ -54,7 +54,7 @@ func (bf *BibFile) readLiteral() (lit BibString, err error) {
 		// add the next non-space sequence
 		cache, _, err = bf.Reader.ReadWhile(isNotSpecialSpaceLiteral)
 		if err != nil {
-			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", bf.Reader.GetPosition())
+			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", bf.Reader.Position())
 			return
 		}
 		lit.value += cache
@@ -63,14 +63,14 @@ func (bf *BibFile) readLiteral() (lit BibString, err error) {
 		cache, source, err = bf.Reader.ReadWhile(unicode.IsSpace)
 		lit.source.End = source.Start
 		if err != nil {
-			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", bf.Reader.GetPosition())
+			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", bf.Reader.Position())
 			return
 		}
 
 		// read the next character or bail out
 		char, pos, err = bf.Reader.Read()
 		if err != nil {
-			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", bf.Reader.GetPosition())
+			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", bf.Reader.Position())
 			return
 		}
 		if pos.EOF {
@@ -92,7 +92,7 @@ func (bf *BibFile) readLiteral() (lit BibString, err error) {
 func (bf *BibFile) readBrace() (brace BibString, err error) {
 	char, pos, err := bf.Reader.Read()
 	if err != nil {
-		err = errors.Wrapf(err, "Unexpected error while attempting to read braces near %s", bf.Reader.GetPosition())
+		err = errors.Wrapf(err, "Unexpected error while attempting to read braces near %s", bf.Reader.Position())
 		return
 	}
 	if pos.EOF {
@@ -115,7 +115,7 @@ func (bf *BibFile) readBrace() (brace BibString, err error) {
 		// and bail out when an error or EOF occurs
 		char, pos, err = bf.Reader.Read()
 		if err != nil {
-			err = errors.Wrapf(err, "Unexpected error while attempting to read braces near %s", bf.Reader.GetPosition())
+			err = errors.Wrapf(err, "Unexpected error while attempting to read braces near %s", bf.Reader.Position())
 			return
 		}
 		if pos.EOF {
@@ -142,7 +142,7 @@ func (bf *BibFile) readBrace() (brace BibString, err error) {
 
 	brace.kind = BibStringBracket
 	brace.value = builder.String()
-	brace.source.End = bf.Reader.GetPosition()
+	brace.source.End = bf.Reader.Position()
 
 	return
 }
@@ -152,7 +152,7 @@ func (bf *BibFile) readBrace() (brace BibString, err error) {
 func (bf *BibFile) readQuote() (quote BibString, err error) {
 	char, pos, err := bf.Reader.Read()
 	if err != nil {
-		err = errors.Wrapf(err, "Unexpected error while attempting to read quote near %s", bf.Reader.GetPosition())
+		err = errors.Wrapf(err, "Unexpected error while attempting to read quote near %s", bf.Reader.Position())
 		return
 	}
 	if pos.EOF {
@@ -175,7 +175,7 @@ func (bf *BibFile) readQuote() (quote BibString, err error) {
 		// and bail out when an error or EOF occurs
 		char, pos, err = bf.Reader.Read()
 		if err != nil {
-			err = errors.Wrapf(err, "Unexpected error while attempting to read quote near %s", bf.Reader.GetPosition())
+			err = errors.Wrapf(err, "Unexpected error while attempting to read quote near %s", bf.Reader.Position())
 			return
 		}
 		if pos.EOF {
@@ -202,7 +202,7 @@ func (bf *BibFile) readQuote() (quote BibString, err error) {
 
 	quote.kind = BibStringQuote
 	quote.value = builder.String()
-	quote.source.End = bf.Reader.GetPosition()
+	quote.source.End = bf.Reader.Position()
 
 	return
 }
