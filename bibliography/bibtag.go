@@ -5,9 +5,11 @@ import "github.com/tkw1536/gotexml/utils"
 
 // BibTag represents a tag (e.g. author = {1 2 3}) inside of a BibFile
 type BibTag struct {
-	name    BibString         // the name of this tag
-	content []BibString       // the content of this tag
-	source  utils.ReaderRange // source of this bibtag
+	name    BibString   // the name of this tag
+	content []BibString // the content of this tag
+
+	space  BibString
+	source utils.ReaderRange // source of this bibtag
 }
 
 // Name returns the name of this BibTag

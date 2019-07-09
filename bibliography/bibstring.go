@@ -20,11 +20,11 @@ type BibStringKind string
 
 // kind of BibStrings that occur in the code
 const (
-	BibStringOther     BibStringKind = ""
-	BibStringLiteral   BibStringKind = "LITERAL"
-	BibStringQuote     BibStringKind = "QUOTE"
-	BibStringBracket   BibStringKind = "BRACKET"
-	BibStringEvaluated BibStringKind = "EVALUATED"
+	BibStringOther     BibStringKind = ""          // any other kind of bibstring, mostly spaces and un-finished data
+	BibStringLiteral   BibStringKind = "LITERAL"   // BibTex Literals (e.g. example)
+	BibStringQuote     BibStringKind = "QUOTE"     // BibTex Quotes (e.g. "example")
+	BibStringBracket   BibStringKind = "BRACKET"   // anything in BibTex Brackets, e.g. {ExAmPle}
+	BibStringEvaluated BibStringKind = "EVALUATED" // anything that has been evaluated (original information has been lost)
 )
 
 // Copy makes a copy of this BibString
