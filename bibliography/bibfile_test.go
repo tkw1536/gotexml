@@ -165,15 +165,24 @@ func TestBibFile_readBrace(t *testing.T) {
 
 func TestBibFile_readLiteral(t *testing.T) {
 	tests := []struct {
-		name    string
-		input   string
-		wantLit BibString
+		name      string
+		input     string
+		wantLit   BibString
+		wantSpace BibString
 	}{
 		{
 			"empty",
 			`,`,
 			BibString{
 				kind:  BibStringLiteral,
+				value: ``,
+				source: utils.ReaderRange{
+					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+				},
+			},
+			BibString{
+				kind:  BibStringOther,
 				value: ``,
 				source: utils.ReaderRange{
 					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
@@ -192,6 +201,14 @@ func TestBibFile_readLiteral(t *testing.T) {
 					End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
 				},
 			},
+			BibString{
+				kind:  BibStringOther,
+				value: ``,
+				source: utils.ReaderRange{
+					Start: utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
+				},
+			},
 		},
 		{
 			"with an @ sign",
@@ -201,6 +218,14 @@ func TestBibFile_readLiteral(t *testing.T) {
 				value: `hello@world`,
 				source: utils.ReaderRange{
 					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
+				},
+			},
+			BibString{
+				kind:  BibStringOther,
+				value: ``,
+				source: utils.ReaderRange{
+					Start: utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
 					End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
 				},
 			},
@@ -216,6 +241,14 @@ func TestBibFile_readLiteral(t *testing.T) {
 					End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
 				},
 			},
+			BibString{
+				kind:  BibStringOther,
+				value: ``,
+				source: utils.ReaderRange{
+					Start: utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
+				},
+			},
 		},
 		{
 			"surrounding space",
@@ -228,20 +261,31 @@ func TestBibFile_readLiteral(t *testing.T) {
 					End:   utils.ReaderPosition{Line: 0, Column: 12, EOF: false},
 				},
 			},
+			BibString{
+				kind:  BibStringOther,
+				value: `     `,
+				source: utils.ReaderRange{
+					Start: utils.ReaderPosition{Line: 0, Column: 12, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 16, EOF: false},
+				},
+			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			bf := &BibFile{
-				Reader: utils.NewRuneReaderFromString(tt.input + "}"),
+				Reader: utils.NewRuneReaderFromString(tt.input + "},"),
 			}
-			gotLit, err := bf.readLiteral()
+			gotLit, gotSpace, err := bf.readLiteral()
 			if (err != nil) != false {
 				t.Errorf("BibFile.readLiteral() error = %v, wantErr %v", err, false)
 				return
 			}
 			if !reflect.DeepEqual(gotLit, tt.wantLit) {
-				t.Errorf("BibFile.readLiteral() = %v, want %v", gotLit, tt.wantLit)
+				t.Errorf("BibFile.readLiteral() gotLit = %v, wantLit %v", gotLit, tt.wantLit)
+			}
+			if !reflect.DeepEqual(gotSpace, tt.wantSpace) {
+				t.Errorf("BibFile.readLiteral() gotSpace = %v, wantSpace %v", gotSpace, tt.wantSpace)
 			}
 		})
 	}

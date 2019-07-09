@@ -27,8 +27,8 @@ func (bf *BibFile) Parse() error {
 }
 
 // readLiteral reads a BibString of kind BibStringLiteral from the input
-// skips spaces after the read literal
-func (bf *BibFile) readLiteral() (lit BibString, err error) {
+// Skips and returns spaces after the BibString.
+func (bf *BibFile) readLiteral() (lit BibString, space BibString, rr error) {
 
 	lit.source.Start = bf.Reader.Position()
 	lit.source.End = lit.source.Start
@@ -61,7 +61,6 @@ func (bf *BibFile) readLiteral() (lit BibString, err error) {
 
 		// read the next batch of spaces
 		cache, source, err = bf.Reader.ReadWhile(unicode.IsSpace)
-		lit.source.End = source.Start
 		if err != nil {
 			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", bf.Reader.Position())
 			return
@@ -82,13 +81,20 @@ func (bf *BibFile) readLiteral() (lit BibString, err error) {
 	// unread the last char
 	bf.Reader.Unread(char, pos)
 
-	// and return the literal
+	// store remaining data from the literal
 	lit.kind = BibStringLiteral
+	lit.source.End = source.Start
+
+	// store remaining data from the spacing
+	space.kind = BibStringOther
+	space.value = cache
+	space.source = source
+
 	return
 }
 
 // readBrace reads a BibString of kind BibStringBracket from the input
-// does not skip any spaces before or after
+// Must start with "{" and end with "}". Does not skip any spaces before or after.
 func (bf *BibFile) readBrace() (brace BibString, err error) {
 	char, pos, err := bf.Reader.Read()
 	if err != nil {
@@ -148,7 +154,7 @@ func (bf *BibFile) readBrace() (brace BibString, err error) {
 }
 
 // readQuote reads a BibString of kind BibStringQuote from the input
-// does not skip any spaces before or after
+// Must start and end with "s. Does not skip any spaces.
 func (bf *BibFile) readQuote() (quote BibString, err error) {
 	char, pos, err := bf.Reader.Read()
 	if err != nil {
