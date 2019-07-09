@@ -2,7 +2,9 @@ package bibliography
 
 import (
 	"strings"
+	"unicode"
 
+	"github.com/pkg/errors"
 	"github.com/tkw1536/gotexml/utils"
 )
 
@@ -80,4 +82,202 @@ func (bs *BibString) Append(other *BibString) {
 	bs.kind = BibStringEvaluated
 	bs.value += other.value
 	bs.source.End = other.source.End
+}
+
+// readLiteral reads a BibString of kind BibStringLiteral from the input
+// Skips and returns spaces after the BibString.
+func readLiteral(reader *utils.RuneReader) (lit BibString, space BibString, rr error) {
+
+	lit.source.Start = reader.Position()
+	lit.source.End = lit.source.Start
+
+	// read the next character or bail out when an error or EOF occurs
+	char, pos, err := reader.Read()
+	if err != nil {
+		err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", reader.Position())
+		return
+	}
+	if pos.EOF {
+		err = errors.Errorf("Unexpected end of input while attempting to read literal near %s", pos)
+		return
+	}
+
+	// iterate over sequential non-space sequences
+	var cache string
+	var source utils.ReaderRange
+	for isNotSpecialLiteral(char) {
+		// add spaces from the previous iteration
+		lit.value += cache + string(char)
+
+		// add the next non-space sequence
+		cache, _, err = reader.ReadWhile(isNotSpecialSpaceLiteral)
+		if err != nil {
+			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", reader.Position())
+			return
+		}
+		lit.value += cache
+
+		// read the next batch of spaces
+		cache, source, err = reader.ReadWhile(unicode.IsSpace)
+		if err != nil {
+			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", reader.Position())
+			return
+		}
+
+		// read the next character or bail out
+		char, pos, err = reader.Read()
+		if err != nil {
+			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", reader.Position())
+			return
+		}
+		if pos.EOF {
+			err = errors.Errorf("Unexpected end of input while attempting to read literal near %s", pos)
+			return
+		}
+	}
+
+	// unread the last char
+	reader.Unread(char, pos)
+
+	// store remaining data from the literal
+	lit.kind = BibStringLiteral
+	lit.source.End = source.Start
+
+	// store remaining data from the spacing
+	space.kind = BibStringOther
+	space.value = cache
+	space.source = source
+
+	return
+}
+
+// readBrace reads a BibString of kind BibStringBracket from the input
+// Must start with "{" and end with "}". Does not skip any spaces before or after.
+func readBrace(reader *utils.RuneReader) (brace BibString, err error) {
+	char, pos, err := reader.Read()
+	if err != nil {
+		err = errors.Wrapf(err, "Unexpected error while attempting to read braces near %s", reader.Position())
+		return
+	}
+	if pos.EOF {
+		err = errors.Errorf("Unexpected end of input while attempting to read brace near %s", pos)
+		return
+	}
+	if char != '{' {
+		err = errors.Errorf("Expected to find an '{' near %s but got %q", pos, char)
+		return
+	}
+
+	// record starting position
+	brace.source.Start = pos
+
+	// iteratively read chars, keeping track of the current level
+	var builder strings.Builder
+	level := 1
+	for true {
+		// read the next character
+		// and bail out when an error or EOF occurs
+		char, pos, err = reader.Read()
+		if err != nil {
+			err = errors.Wrapf(err, "Unexpected error while attempting to read braces near %s", reader.Position())
+			return
+		}
+		if pos.EOF {
+			err = errors.Errorf("Unexpected end of input while attempting to read braces near %s", pos)
+			return
+		}
+
+		// update level
+		if char == '{' {
+			level++
+		} else if char == '}' {
+			level--
+		}
+
+		// final closing brace => exit
+		if level == 0 {
+			break
+		}
+
+		// record the rune
+		builder.WriteRune(char)
+
+	}
+
+	brace.kind = BibStringBracket
+	brace.value = builder.String()
+	brace.source.End = reader.Position()
+
+	return
+}
+
+// readQuote reads a BibString of kind BibStringQuote from the input
+// Must start and end with "s. Does not skip any spaces.
+func readQuote(reader *utils.RuneReader) (quote BibString, err error) {
+	char, pos, err := reader.Read()
+	if err != nil {
+		err = errors.Wrapf(err, "Unexpected error while attempting to read quote near %s", reader.Position())
+		return
+	}
+	if pos.EOF {
+		err = errors.Errorf("Unexpected end of input while attempting to read quote near %s", pos)
+		return
+	}
+	if char != '"' {
+		err = errors.Errorf("Expected to find an '\"' near %s but got %q", pos, char)
+		return
+	}
+
+	// record starting position
+	quote.source.Start = pos
+
+	// iteratively read chars, keeping track of the current level
+	var builder strings.Builder
+	level := 0
+	for true {
+		// read the next character
+		// and bail out when an error or EOF occurs
+		char, pos, err = reader.Read()
+		if err != nil {
+			err = errors.Wrapf(err, "Unexpected error while attempting to read quote near %s", reader.Position())
+			return
+		}
+		if pos.EOF {
+			err = errors.Errorf("Unexpected end of input while attempting to read quote near %s", pos)
+			return
+		}
+
+		if char == '"' {
+			if level == 0 {
+				break
+			}
+		} else if char == '{' {
+			level++
+		} else if char == '}' {
+			// if we are at level 0, we ignore extra closing braces
+			// as being an error
+			if level > 0 {
+				level--
+			}
+		}
+
+		builder.WriteRune(char)
+	}
+
+	quote.kind = BibStringQuote
+	quote.value = builder.String()
+	quote.source.End = reader.Position()
+
+	return
+}
+
+// isNotSpecialLiteral checks that the rune is not a specially treated literal
+func isNotSpecialLiteral(r rune) bool {
+	return (r != '{') && (r != '}') && (r != '=') && (r != '#') && (r != ',')
+}
+
+// isNotSpecialSpaceLiteral checks the the rune is not a specially treated literal
+// and also does not terminate a space
+func isNotSpecialSpaceLiteral(r rune) bool {
+	return !unicode.IsSpace(r) && (r != '{') && (r != '}') && (r != '=') && (r != '#') && (r != ',')
 }
