@@ -4,7 +4,6 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/pkg/errors"
 	"github.com/tkw1536/gotexml/utils"
 )
 
@@ -86,6 +85,7 @@ func (bs *BibString) Append(other *BibString) {
 
 // readLiteral reads a BibString of kind BibStringLiteral from the input
 // Skips and returns spaces after the BibString.
+// If not nil, err is an instance of utils.ReaderError
 func readLiteral(reader *utils.RuneReader) (lit BibString, space BibString, rr error) {
 
 	lit.source.Start = reader.Position()
@@ -94,11 +94,11 @@ func readLiteral(reader *utils.RuneReader) (lit BibString, space BibString, rr e
 	// read the next character or bail out when an error or EOF occurs
 	char, pos, err := reader.Read()
 	if err != nil {
-		err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", reader.Position())
+		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read literal")
 		return
 	}
 	if pos.EOF {
-		err = errors.Errorf("Unexpected end of input while attempting to read literal near %s", pos)
+		err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read literal")
 		return
 	}
 
@@ -112,7 +112,7 @@ func readLiteral(reader *utils.RuneReader) (lit BibString, space BibString, rr e
 		// add the next non-space sequence
 		cache, _, err = reader.ReadWhile(isNotSpecialSpaceLiteral)
 		if err != nil {
-			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", reader.Position())
+			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read literal")
 			return
 		}
 		lit.value += cache
@@ -120,18 +120,18 @@ func readLiteral(reader *utils.RuneReader) (lit BibString, space BibString, rr e
 		// read the next batch of spaces
 		cache, source, err = reader.ReadWhile(unicode.IsSpace)
 		if err != nil {
-			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", reader.Position())
+			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read literal")
 			return
 		}
 
 		// read the next character or bail out
 		char, pos, err = reader.Read()
 		if err != nil {
-			err = errors.Wrapf(err, "Unexpected error while attempting to read literal near %s", reader.Position())
+			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read literal")
 			return
 		}
 		if pos.EOF {
-			err = errors.Errorf("Unexpected end of input while attempting to read literal near %s", pos)
+			err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read literal")
 			return
 		}
 	}
@@ -153,18 +153,19 @@ func readLiteral(reader *utils.RuneReader) (lit BibString, space BibString, rr e
 
 // readBrace reads a BibString of kind BibStringBracket from the input
 // Must start with "{" and end with "}". Does not skip any spaces before or after.
+// If not nil, err is an instance of utils.ReaderError
 func readBrace(reader *utils.RuneReader) (brace BibString, err error) {
 	char, pos, err := reader.Read()
 	if err != nil {
-		err = errors.Wrapf(err, "Unexpected error while attempting to read braces near %s", reader.Position())
+		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read braces")
 		return
 	}
 	if pos.EOF {
-		err = errors.Errorf("Unexpected end of input while attempting to read brace near %s", pos)
+		err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read brace")
 		return
 	}
 	if char != '{' {
-		err = errors.Errorf("Expected to find an '{' near %s but got %q", pos, char)
+		err = utils.NewErrorF(reader, "Expected to find an '{' but got %q", char)
 		return
 	}
 
@@ -179,11 +180,11 @@ func readBrace(reader *utils.RuneReader) (brace BibString, err error) {
 		// and bail out when an error or EOF occurs
 		char, pos, err = reader.Read()
 		if err != nil {
-			err = errors.Wrapf(err, "Unexpected error while attempting to read braces near %s", reader.Position())
+			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read braces")
 			return
 		}
 		if pos.EOF {
-			err = errors.Errorf("Unexpected end of input while attempting to read braces near %s", pos)
+			err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read braces")
 			return
 		}
 
@@ -213,18 +214,19 @@ func readBrace(reader *utils.RuneReader) (brace BibString, err error) {
 
 // readQuote reads a BibString of kind BibStringQuote from the input
 // Must start and end with "s. Does not skip any spaces.
+// If not nil, err is an instance of utils.ReaderError
 func readQuote(reader *utils.RuneReader) (quote BibString, err error) {
 	char, pos, err := reader.Read()
 	if err != nil {
-		err = errors.Wrapf(err, "Unexpected error while attempting to read quote near %s", reader.Position())
+		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read quote")
 		return
 	}
 	if pos.EOF {
-		err = errors.Errorf("Unexpected end of input while attempting to read quote near %s", pos)
+		err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read quote")
 		return
 	}
 	if char != '"' {
-		err = errors.Errorf("Expected to find an '\"' near %s but got %q", pos, char)
+		err = utils.NewErrorF(reader, "Expected to find an '\"' but got %q", char)
 		return
 	}
 
@@ -239,11 +241,11 @@ func readQuote(reader *utils.RuneReader) (quote BibString, err error) {
 		// and bail out when an error or EOF occurs
 		char, pos, err = reader.Read()
 		if err != nil {
-			err = errors.Wrapf(err, "Unexpected error while attempting to read quote near %s", reader.Position())
+			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read quote")
 			return
 		}
 		if pos.EOF {
-			err = errors.Errorf("Unexpected end of input while attempting to read quote near %s", pos)
+			err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read quote")
 			return
 		}
 
