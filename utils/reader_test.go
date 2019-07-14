@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"reflect"
-	"regexp"
 	"testing"
 )
 
@@ -343,60 +342,6 @@ func TestRuneReader_ReadWhile(t *testing.T) {
 	}
 }
 
-func TestRuneReader_ReadWhileMatch(t *testing.T) {
-	tests := []struct {
-		name    string
-		re      *regexp.Regexp
-		wantS   string
-		wantLoc ReaderRange
-	}{
-		{
-			"read nothing",
-			regexp.MustCompile("^$"),
-			"",
-			ReaderRange{
-				ReaderPosition{0, 0, false},
-				ReaderPosition{0, 0, false},
-			},
-		},
-		{
-			"read letters",
-			regexp.MustCompile("^[aA-zZ]+$"),
-			"line",
-			ReaderRange{
-				ReaderPosition{0, 0, false},
-				ReaderPosition{0, 3, false},
-			},
-		},
-		{
-			"read until the end",
-			regexp.MustCompile(".*"),
-			"line 1\nline 2\nline 3\nline 4\nline 5\ralso\r\rstill\n\nline 7\n",
-			ReaderRange{
-				ReaderPosition{0, 0, false},
-				ReaderPosition{7, 0, true},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			raw := makeTestReader()
-
-			gotS, gotLoc, err := raw.ReadWhileMatch(tt.re)
-			if (err != nil) != false {
-				t.Errorf("RuneReader.ReadWhileMatch() error = %v, wantErr %v", err, false)
-				return
-			}
-			if gotS != tt.wantS {
-				t.Errorf("RuneReader.ReadWhileMatch() gotS = %v, want %v", gotS, tt.wantS)
-			}
-			if !reflect.DeepEqual(gotLoc, tt.wantLoc) {
-				t.Errorf("RuneReader.ReadWhileMatch() gotLoc = %v, want %v", gotLoc, tt.wantLoc)
-			}
-		})
-	}
-}
-
 func TestRuneReader_EatWhile(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -432,53 +377,6 @@ func TestRuneReader_EatWhile(t *testing.T) {
 			}
 			if gotCount != tt.wantCount {
 				t.Errorf("RuneReader.EatWhile() count = %v, wantCount %v", gotCount, tt.wantCount)
-			}
-
-			gotPos := raw.Position()
-			if !reflect.DeepEqual(gotPos, tt.wantPos) {
-				t.Errorf("RuneReader.GetPosition() gotPos = %v, want %v", gotPos, tt.wantPos)
-			}
-		})
-	}
-}
-
-func TestRuneReader_EatWhileMatch(t *testing.T) {
-	tests := []struct {
-		name      string
-		re        *regexp.Regexp
-		wantCount int
-		wantPos   ReaderPosition
-	}{
-		{
-			"eat nothing",
-			regexp.MustCompile("^$"),
-			0,
-			ReaderPosition{0, 0, false},
-		},
-		{
-			"eat letters",
-			regexp.MustCompile("^[aA-zZ]+$"),
-			4,
-			ReaderPosition{0, 4, false},
-		},
-		{
-			"eat everything",
-			regexp.MustCompile(".*"),
-			55,
-			ReaderPosition{7, 0, true},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			raw := makeTestReader()
-
-			gotCount, err := raw.EatWhileMatch(tt.re)
-			if (err != nil) != false {
-				t.Errorf("RuneReader.EatWhileMatch() error = %v, wantErr %v", err, false)
-				return
-			}
-			if gotCount != tt.wantCount {
-				t.Errorf("RuneReader.EatWhileMatch() gotCount = %v, want %v", gotCount, tt.wantCount)
 			}
 
 			gotPos := raw.Position()

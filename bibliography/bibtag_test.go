@@ -43,7 +43,7 @@ func Test_readTag(t *testing.T) {
 							value: `value`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 5, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 4, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -58,7 +58,7 @@ func Test_readTag(t *testing.T) {
 				},
 				source: utils.ReaderRange{
 					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 5, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 4, EOF: false},
 				},
 			},
 			false,
@@ -84,7 +84,7 @@ func Test_readTag(t *testing.T) {
 							value: `value`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 7, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 6, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -99,7 +99,7 @@ func Test_readTag(t *testing.T) {
 				},
 				source: utils.ReaderRange{
 					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 7, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 6, EOF: false},
 				},
 			},
 			false,
@@ -124,7 +124,7 @@ func Test_readTag(t *testing.T) {
 							value: `value`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 7, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 6, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -139,7 +139,7 @@ func Test_readTag(t *testing.T) {
 				},
 				source: utils.ReaderRange{
 					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 7, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 6, EOF: false},
 				},
 			},
 			false,
@@ -164,7 +164,7 @@ func Test_readTag(t *testing.T) {
 							value: `value1`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 6, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 5, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -183,7 +183,7 @@ func Test_readTag(t *testing.T) {
 							value: `value2`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 9, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 15, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 14, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -198,7 +198,7 @@ func Test_readTag(t *testing.T) {
 				},
 				source: utils.ReaderRange{
 					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 15, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 14, EOF: false},
 				},
 			},
 			false,
@@ -223,7 +223,7 @@ func Test_readTag(t *testing.T) {
 							value: `value1`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 8, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 7, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -242,7 +242,7 @@ func Test_readTag(t *testing.T) {
 							value: `value2`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 17, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 16, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -257,7 +257,7 @@ func Test_readTag(t *testing.T) {
 				},
 				source: utils.ReaderRange{
 					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 17, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 16, EOF: false},
 				},
 			},
 			false,
@@ -284,7 +284,7 @@ func Test_readTag(t *testing.T) {
 							value: `name`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 4, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 3, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -303,7 +303,7 @@ func Test_readTag(t *testing.T) {
 							value: `value`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 7, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 12, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -318,7 +318,7 @@ func Test_readTag(t *testing.T) {
 				},
 				source: utils.ReaderRange{
 					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 12, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
 				},
 			},
 			false,
@@ -343,7 +343,7 @@ func Test_readTag(t *testing.T) {
 							value: `name`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 4, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 3, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -351,7 +351,7 @@ func Test_readTag(t *testing.T) {
 							value: `=`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 4, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 5, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 4, EOF: false},
 							},
 						},
 					},
@@ -362,7 +362,7 @@ func Test_readTag(t *testing.T) {
 							value: `value`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 5, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 10, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 9, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -377,7 +377,7 @@ func Test_readTag(t *testing.T) {
 				},
 				source: utils.ReaderRange{
 					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 10, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 9, EOF: false},
 				},
 			},
 			false,
@@ -402,7 +402,7 @@ func Test_readTag(t *testing.T) {
 							value: `name`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 4, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 3, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -410,7 +410,7 @@ func Test_readTag(t *testing.T) {
 							value: `=`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 4, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 5, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 4, EOF: false},
 							},
 						},
 					},
@@ -421,7 +421,7 @@ func Test_readTag(t *testing.T) {
 							value: `a`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 5, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 6, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 5, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -429,7 +429,7 @@ func Test_readTag(t *testing.T) {
 							value: `#`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 6, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 7, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 6, EOF: false},
 							},
 						},
 					},
@@ -440,7 +440,7 @@ func Test_readTag(t *testing.T) {
 							value: `b`,
 							source: utils.ReaderRange{
 								Start: utils.ReaderPosition{Line: 0, Column: 7, EOF: false},
-								End:   utils.ReaderPosition{Line: 0, Column: 10, EOF: false},
+								End:   utils.ReaderPosition{Line: 0, Column: 9, EOF: false},
 							},
 						},
 						suffix: BibString{
@@ -455,7 +455,7 @@ func Test_readTag(t *testing.T) {
 				},
 				source: utils.ReaderRange{
 					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 10, EOF: false},
+					End:   utils.ReaderPosition{Line: 0, Column: 9, EOF: false},
 				},
 			},
 			false,

@@ -81,11 +81,10 @@ func (bt *BibTag) Evaluate(context map[string]string) (failed []*BibString) {
 	return
 }
 
-// reads a BibTag and a suffix (terminating character, e.g. '}', from the source file
+// reads a BibTag (which does not include a terminating character) from the source file
 // err is either nil, io.EOF or an instance of
 // when io.EOF is returned, this means that no valid BibTag was read and only tag.initialSpace was populated
 func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
-	// TODO: Spaces do not seem accurate for suffixes
 	// read spaces at the beginning
 	tag.prefix.value, tag.prefix.source, err = reader.ReadWhile(unicode.IsSpace)
 	if err != nil {
@@ -116,6 +115,7 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 		return
 	}
 	tag.source.Start = pos
+	prevPos := pos
 
 	hadEqualSign := false       // did we have an equal sign yet?
 	shouldAppendSuffix := false // should we append further spaces to the suffix instead of resetting it
@@ -146,6 +146,7 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 			// add an '=' to the last suffix
 			tag.elements[len(tag.elements)-1].suffix.value += string(r)
 			tag.elements[len(tag.elements)-1].suffix.source.End = pos
+			prevPos = pos
 			shouldAppendSuffix = true
 
 			// after a string, we may no longer have '='s
@@ -166,6 +167,7 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 			// add an '#' to the last suffix
 			tag.elements[len(tag.elements)-1].suffix.value += string(r)
 			tag.elements[len(tag.elements)-1].suffix.source.End = pos
+			prevPos = pos
 			shouldAppendSuffix = true
 
 			// after a concat, we may only add another string
@@ -186,6 +188,7 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 			tag.elements = append(tag.elements, BibTagElement{
 				name: temp,
 			})
+			prevPos = temp.source.End
 			shouldAppendSuffix = false
 
 			// after a quote, either another string is concatinated
@@ -208,6 +211,7 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 			tag.elements = append(tag.elements, BibTagElement{
 				name: temp,
 			})
+			prevPos = temp.source.End
 			shouldAppendSuffix = false
 
 			// after a brace, we may have an equal sign unless we already had one before
@@ -229,6 +233,8 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 				name:   temp,
 				suffix: space,
 			})
+
+			prevPos = temp.source.End
 			shouldAppendSuffix = true
 
 			// after a brace, we may have an equal sign unless we already had one before
@@ -241,21 +247,29 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 		s, loc, err = reader.ReadWhile(unicode.IsSpace)
 		if err != nil {
 			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read tag")
+			return
 		}
 
-		// append the new spaces to the suffix if we need to
+		// append or use s as the space
+		l := &tag.elements[len(tag.elements)-1].suffix
 		if shouldAppendSuffix {
-			tag.elements[len(tag.elements)-1].suffix.value += s
-			tag.elements[len(tag.elements)-1].suffix.source.End = loc.End
+			l.AppendRaw(s, loc)
 		} else {
-			tag.elements[len(tag.elements)-1].suffix.value = s
-			tag.elements[len(tag.elements)-1].suffix.source = loc
+			l.value = s
+			l.source = loc
+		}
+		tag.elements[len(tag.elements)-1].suffix = *l
+
+		// if we read a space, update the last read position
+		if s != "" {
+			prevPos = l.source.End
 		}
 
 		// peek the next char
 		r, pos, err = reader.Peek()
 		if err != nil {
 			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read tag")
+			return
 		}
 		if pos.EOF {
 			err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read tag")
@@ -263,6 +277,6 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 		}
 	}
 
-	tag.source.End = reader.Position()
+	tag.source.End = prevPos
 	return
 }

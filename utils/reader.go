@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"io"
-	"regexp"
 	"strings"
 )
 
@@ -34,6 +33,7 @@ func NewRuneReaderFromReader(rd io.Reader) *RuneReader {
 }
 
 // Position returns the current position of the reader
+// i.e. the position of the next character to be read
 func (raw *RuneReader) Position() ReaderPosition {
 	return raw.position
 }
@@ -221,7 +221,7 @@ func (raw *RuneReader) unreadRaw(r rune, pos ReaderPosition, unsafe bool) (err e
 }
 
 // ReadWhile reads runes from a string as long as they and the partial string so far match the regexp
-// returns the matching string, the position of the first character of the string, and the last position of the string
+// returns the matching string, the first sucessfully read character, and the last successfully read character
 // an empty string implies that the first read character did not match, and that loc.Start == loc.End
 func (raw *RuneReader) ReadWhile(f func(r rune) bool) (s string, loc ReaderRange, err error) {
 	// make a buffer for the string
@@ -239,14 +239,16 @@ func (raw *RuneReader) ReadWhile(f func(r rune) bool) (s string, loc ReaderRange
 	// keep reading the current rune
 	// as long as there is no EOF
 	var r rune
-	var p ReaderPosition
+	p := raw.position
 	for true {
+		loc.End = p
 		r, p, err = raw.Read()
 		if err != nil {
 			return
 		}
 
-		// if we reached EOF, we don't need to check anything
+		// if we reached the end of the string
+		// we need to update the position one more time
 		if p.EOF {
 			loc.End = p
 			return
@@ -261,24 +263,13 @@ func (raw *RuneReader) ReadWhile(f func(r rune) bool) (s string, loc ReaderRange
 
 		// don't add the trailing EOF
 		builder.WriteRune(r)
-		loc.End = p
 	}
 
 	return
 }
 
-// ReadWhileMatch reads runes as long as re matches the characters read up to this point
-// When not in an error state, it is guaranteed that either re.MatchString(s) is true or s is empty and start === end
-func (raw *RuneReader) ReadWhileMatch(re *regexp.Regexp) (s string, loc ReaderRange, err error) {
-	var builder strings.Builder
-	return raw.ReadWhile(func(r rune) bool {
-		builder.WriteRune(r)
-		return re.MatchString(builder.String())
-	})
-}
-
 // EatWhile eats runes from the RuneReader as long as f returns true
-// The first rune for which f does not match is not eaten
+// Along with a count of how many characters have been eaten
 func (raw *RuneReader) EatWhile(f func(r rune) bool) (count int, err error) {
 	var r rune
 	var p ReaderPosition
@@ -302,13 +293,5 @@ func (raw *RuneReader) EatWhile(f func(r rune) bool) (count int, err error) {
 		count++
 	}
 
-	return
-}
-
-// EatWhileMatch eats characters from RuneReader as long as re matches the substring so far
-// the first substring for which the substring does not match is not eaten
-func (raw *RuneReader) EatWhileMatch(re *regexp.Regexp) (count int, err error) {
-	s, _, err := raw.ReadWhileMatch(re)
-	count = len(s)
 	return
 }
