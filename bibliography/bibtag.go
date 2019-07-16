@@ -40,6 +40,7 @@ func (bt *BibTag) Source() utils.ReaderRange {
 }
 
 // reads a BibTag (which does not include a terminating character) from the source file
+// contains all spaces before a terminating "," or "}"
 // err is either nil, io.EOF or an instance of
 // when io.EOF is returned, this means that no valid BibTag was read and only tag.initialSpace was populated
 func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
