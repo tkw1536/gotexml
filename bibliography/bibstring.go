@@ -28,16 +28,6 @@ const (
 	BibStringEvaluated BibStringKind = "EVALUATED" // anything that has been evaluated (original information has been lost)
 )
 
-// Copy makes a copy of this BibString
-func (bs *BibString) Copy() *BibString {
-	// TODO: Check if this is used
-	return &BibString{
-		kind:   bs.kind,
-		value:  bs.value,
-		source: bs.source,
-	}
-}
-
 // Kind gets the kind of this BibString
 func (bs *BibString) Kind() BibStringKind {
 	return bs.kind
@@ -56,23 +46,6 @@ func (bs *BibString) Source() utils.ReaderRange {
 // NormalizeValue normalizes the value of this BibString
 func (bs *BibString) NormalizeValue() {
 	bs.value = strings.ToLower(bs.value)
-}
-
-// Evaluate evaluates this BibString inside a context
-// returns true iff evaluation was successfull
-func (bs *BibString) Evaluate(context map[string]string) bool {
-	if bs.kind == BibStringLiteral {
-		// grab the value of this string
-		value, ok := context[strings.ToLower(bs.value)]
-		if !ok {
-			return false
-		}
-
-		// update the kind and value
-		bs.kind = BibStringEvaluated
-		bs.value = value
-	}
-	return true
 }
 
 // Append appends the value of another bibstring to this bibstring

@@ -39,48 +39,6 @@ func (bt *BibTag) Source() utils.ReaderRange {
 	return bt.source
 }
 
-// Value returns the singular value of this BibString or panic()s
-func (bt *BibTag) Value() BibString {
-	if len(bt.elements) != 2 {
-		panic("BibTag.Value() is not evaluated")
-	}
-	return bt.elements[1].name
-}
-
-// Evaluate evaluates the content of this Bibtag
-// returns a list of items which have failed to evaluate
-func (bt *BibTag) Evaluate(context map[string]string) (failed []*BibString) {
-	/*
-		// normalize the value of the name
-		bt.name.NormalizeValue()
-
-		// if we do not have any content, we panic(
-		if len(bt.content) == 0 {
-			panic("BibTag.Evaluate() is of length 0")
-		}
-
-		// evaluate the first element
-		// and append it to failed if that fails
-		evaluated := bt.content[0]
-		if !evaluated.Evaluate(context) {
-			failed = append(failed, evaluated.Copy())
-		}
-
-		// evaluate and then append all subsequent items
-		for _, item := range bt.content[1:] {
-			if !item.Evaluate(context) {
-				failed = append(failed, &item)
-			}
-			evaluated.Append(&item)
-		}
-
-		// store the evaluated content
-		bt.content = []BibString{evaluated}
-		return
-	*/
-	return
-}
-
 // reads a BibTag (which does not include a terminating character) from the source file
 // err is either nil, io.EOF or an instance of
 // when io.EOF is returned, this means that no valid BibTag was read and only tag.initialSpace was populated

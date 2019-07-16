@@ -25,21 +25,3 @@ func (be *BibEntry) Tags() []BibTag {
 func (be *BibEntry) Source() utils.ReaderRange {
 	return be.source
 }
-
-// Evaluate evalutes this BibEntry inside a context
-// TODO: Re-implement
-func (be *BibEntry) Evaluate(context map[string]string) (failed map[BibString][]*BibString) {
-	// normalize the type of this entry
-	be.tp.NormalizeValue()
-
-	// evaluate all the entries
-	for i := range be.tags {
-		errors := be.tags[i].Evaluate(context)
-		// store the entries (if needed)
-		if len(errors) > 0 {
-			// failed[be.tags[i].name] = errors
-		}
-	}
-
-	return
-}
