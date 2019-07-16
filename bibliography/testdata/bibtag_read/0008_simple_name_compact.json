@@ -1,0 +1,89 @@
+{
+    "prefix": {
+        "kind": "",
+        "value": "",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 0
+            },
+            "end": {
+                "line": 0,
+                "column": 0
+            }
+        }
+    },
+    "elements": [
+        {
+            "Value": {
+                "kind": "LITERAL",
+                "value": "name",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 0
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 3
+                    }
+                }
+            },
+            "Suffix": {
+                "kind": "",
+                "value": "=",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 4
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 4
+                    }
+                }
+            },
+            "isKeyElement": true
+        },
+        {
+            "Value": {
+                "kind": "LITERAL",
+                "value": "value",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 5
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 9
+                    }
+                }
+            },
+            "Suffix": {
+                "kind": "",
+                "value": "",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 10
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 10
+                    }
+                }
+            }
+        }
+    ],
+    "source": {
+        "start": {
+            "line": 0,
+            "column": 0
+        },
+        "end": {
+            "line": 0,
+            "column": 9
+        }
+    }
+}

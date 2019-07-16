@@ -1,0 +1,88 @@
+{
+    "prefix": {
+        "kind": "",
+        "value": "",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 0
+            },
+            "end": {
+                "line": 0,
+                "column": 0
+            }
+        }
+    },
+    "elements": [
+        {
+            "Value": {
+                "kind": "LITERAL",
+                "value": "value1",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 0
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 5
+                    }
+                }
+            },
+            "Suffix": {
+                "kind": "",
+                "value": " # ",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 6
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 8
+                    }
+                }
+            }
+        },
+        {
+            "Value": {
+                "kind": "LITERAL",
+                "value": "value2",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 9
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 14
+                    }
+                }
+            },
+            "Suffix": {
+                "kind": "",
+                "value": "",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 15
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 15
+                    }
+                }
+            }
+        }
+    ],
+    "source": {
+        "start": {
+            "line": 0,
+            "column": 0
+        },
+        "end": {
+            "line": 0,
+            "column": 14
+        }
+    }
+}

@@ -1,6 +1,7 @@
 package bibliography
 
 import (
+	"path"
 	"reflect"
 	"testing"
 
@@ -9,66 +10,24 @@ import (
 
 func TestBibString_Append(t *testing.T) {
 	tests := []struct {
-		name   string
-		before *BibString
-		other  *BibString
-
-		after *BibString
+		name  string
+		asset string
 	}{
-		{"adding two strings",
-			&BibString{
-				kind:  BibStringQuote,
-				value: "hello \n",
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: false},
-				},
-			}, &BibString{
-				kind:  BibStringQuote,
-				value: "world\n",
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 2, Column: 1, EOF: false},
-					End:   utils.ReaderPosition{Line: 3, Column: 0, EOF: true},
-				},
-			}, &BibString{
-				kind:  BibStringEvaluated,
-				value: "hello \nworld\n",
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 3, Column: 0, EOF: true},
-				},
-			},
-		},
-		{"adding empty string",
-			&BibString{
-				kind:  BibStringQuote,
-				value: "hello \n",
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 7, EOF: false},
-				},
-			}, &BibString{
-				kind:  BibStringQuote,
-				value: "",
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 2, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
-				},
-			}, &BibString{
-				kind:  BibStringEvaluated,
-				value: "hello \n",
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
-				},
-			},
-		},
+		{"adding two strings", "0001_adding_two_strings"},
+		{"adding empty string", "0002_adding_empty_string"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.before.Append(tt.other)
-			if !reflect.DeepEqual(tt.before, tt.after) {
-				t.Errorf("BibString.Append() = %v, want %v", tt.before, tt.after)
+			// read the assets
+			var before, other, after BibString
+			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_append", tt.asset+"_before.json"), &before)
+			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_append", tt.asset+"_other.json"), &other)
+			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_append", tt.asset+"_after.json"), &after)
+
+			// call append
+			before.Append(&other)
+			if !reflect.DeepEqual(before, after) {
+				t.Errorf("BibString.Append() = %v, want %v", before, after)
 			}
 		})
 	}
@@ -76,65 +35,28 @@ func TestBibString_Append(t *testing.T) {
 
 func TestBibString_AppendRaw(t *testing.T) {
 	tests := []struct {
-		name   string
-		before *BibString
-		value  string
-		loc    utils.ReaderRange
-
-		after *BibString
+		name  string
+		value string
+		asset string
 	}{
-		{"adding two strings",
-			&BibString{
-				kind:  BibStringQuote,
-				value: "hello \n",
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: false},
-				},
-			},
-			"world\n",
-			utils.ReaderRange{
-				Start: utils.ReaderPosition{Line: 2, Column: 1, EOF: false},
-				End:   utils.ReaderPosition{Line: 3, Column: 0, EOF: true},
-			},
-			&BibString{
-				kind:  BibStringQuote,
-				value: "hello \nworld\n",
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 3, Column: 0, EOF: true},
-				},
-			},
-		},
-		{"adding empty string",
-			&BibString{
-				kind:  BibStringQuote,
-				value: "hello \n",
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 7, EOF: false},
-				},
-			},
-			"",
-			utils.ReaderRange{
-				Start: utils.ReaderPosition{Line: 2, Column: 0, EOF: false},
-				End:   utils.ReaderPosition{Line: 2, Column: 0, EOF: true},
-			},
-			&BibString{
-				kind:  BibStringQuote,
-				value: "hello \n",
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 7, EOF: false},
-				},
-			},
-		},
+		{"adding two strings", "world\n", "0001_adding_two_strings"},
+		{"adding empty string", "", "0002_adding_empty_string"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tt.before.AppendRaw(tt.value, tt.loc)
-			if !reflect.DeepEqual(tt.before, tt.after) {
-				t.Errorf("BibString.AppendRaw() = %v, want %v", tt.before, tt.after)
+
+			// read the others
+			var loc utils.ReaderRange
+			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_appendraw", tt.asset+"_loc.json"), &loc)
+
+			var before, after BibString
+			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_appendraw", tt.asset+"_before.json"), &before)
+			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_appendraw", tt.asset+"_after.json"), &after)
+
+			// call appendraw
+			before.AppendRaw(tt.value, loc)
+			if !reflect.DeepEqual(before, after) {
+				t.Errorf("BibString.AppendRaw() = %v, want %v", before, after)
 			}
 		})
 	}
@@ -142,68 +64,29 @@ func TestBibString_AppendRaw(t *testing.T) {
 
 func TestBibString_readQuote(t *testing.T) {
 	tests := []struct {
-		name      string
-		input     string
-		wantQuote BibString
+		name  string
+		input string
+		asset string
 	}{
-		{
-			"empty quotes",
-			`""`,
-			BibString{
-				kind:  BibStringQuote,
-				value: ``,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 1, EOF: false},
-				},
-			},
-		},
-		{
-			"simple quote",
-			`"hello"`,
-			BibString{
-				kind:  BibStringQuote,
-				value: `hello`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 6, EOF: false},
-				},
-			},
-		},
-		{
-			"with { s",
-			`"{\"}"`,
-			BibString{
-				kind:  BibStringQuote,
-				value: `{\"}`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 5, EOF: false},
-				},
-			},
-		},
-		{
-			"quote with spaces",
-			`"hello world"`,
-			BibString{
-				kind:  BibStringQuote,
-				value: `hello world`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 12, EOF: false},
-				},
-			},
-		},
+		{"empty quotes", `""`, "0001_empty"},
+		{"simple quote", `"hello"`, "0002_simple_quote"},
+		{"with { s", `"{\"}"`, "0003_with_curly"},
+		{"quote with spaces", `"hello world"`, "0004_with_spaces"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// read the asset
+			var wantQuote BibString
+			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_quote", tt.asset+".json"), &wantQuote)
+
+			// call readQuote
 			gotQuote, err := readQuote(utils.NewRuneReaderFromString(tt.input + " , "))
 			if (err != nil) != false {
 				t.Errorf("BibString.readQuote() error = %v, wantErr %v", err, false)
 				return
 			}
-			if !reflect.DeepEqual(gotQuote, tt.wantQuote) {
-				t.Errorf("BibString.readQuote() = %v, want %v", gotQuote, tt.wantQuote)
+			if !reflect.DeepEqual(gotQuote, wantQuote) {
+				t.Errorf("BibString.readQuote() = %v, want %v", gotQuote, wantQuote)
 			}
 		})
 	}
@@ -211,80 +94,31 @@ func TestBibString_readQuote(t *testing.T) {
 
 func TestBibFile_readBrace(t *testing.T) {
 	tests := []struct {
-		name      string
-		input     string
-		wantBrace BibString
+		name  string
+		input string
+		asset string
 	}{
-		{
-			"empty braces",
-			`{}`,
-			BibString{
-				kind:  BibStringBracket,
-				value: ``,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 1, EOF: false},
-				},
-			},
-		},
-		{
-			"simple braces",
-			`{hello}`,
-			BibString{
-				kind:  BibStringBracket,
-				value: `hello`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 6, EOF: false},
-				},
-			},
-		},
-		{
-			"nested braces",
-			`{hello{world}}`,
-			BibString{
-				kind:  BibStringBracket,
-				value: `hello{world}`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 13, EOF: false},
-				},
-			},
-		},
-		{
-			"brace with open \\",
-			`{hello \{world}}`,
-			BibString{
-				kind:  BibStringBracket,
-				value: `hello \{world}`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 15, EOF: false},
-				},
-			},
-		},
-		{
-			"brace with close \\",
-			`{hello world\}}`,
-			BibString{
-				kind:  BibStringBracket,
-				value: `hello world\`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 13, EOF: false},
-				},
-			},
-		},
+		{"empty braces", `{}`, "0001_empty"},
+		{"simple braces", `{hello}`, "0002_simple"},
+		{"nested braces", `{hello{world}}`, "0003_nested"},
+		{"brace with open \\", `{hello \{world}}`, "0004_open_slashes"},
+		{"brace with close \\", `{hello world\}}`, "0004_close_slashes"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			// read the asset
+			var wantBrace BibString
+			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_brace", tt.asset+".json"), &wantBrace)
+
+			// call readBrace
 			gotBrace, err := readBrace(utils.NewRuneReaderFromString(tt.input))
 			if (err != nil) != false {
 				t.Errorf("BibString.readBrace() error = %v, wantErr %v", err, false)
 				return
 			}
-			if !reflect.DeepEqual(gotBrace, tt.wantBrace) {
-				t.Errorf("BibString.readBrace() = %v, want %v", gotBrace, tt.wantBrace)
+			if !reflect.DeepEqual(gotBrace, wantBrace) {
+				t.Errorf("BibString.readBrace() = %v, want %v", gotBrace, wantBrace)
 			}
 		})
 	}
@@ -292,144 +126,36 @@ func TestBibFile_readBrace(t *testing.T) {
 
 func TestBibFile_readLiteral(t *testing.T) {
 	tests := []struct {
-		name      string
-		input     string
-		wantLit   BibString
-		wantSpace BibString
+		name  string
+		input string
+		asset string
 	}{
-		{
-			"empty",
-			`,`,
-			BibString{
-				kind:  BibStringLiteral,
-				value: ``,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-				},
-			},
-			BibString{
-				kind:  BibStringOther,
-				value: ``,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-				},
-			},
-		},
-		{
-			"one character",
-			`a`,
-			BibString{
-				kind:  BibStringLiteral,
-				value: `a`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-				},
-			},
-			BibString{
-				kind:  BibStringOther,
-				value: ``,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 1, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 1, EOF: false},
-				},
-			},
-		},
-		{
-			"space",
-			`hello world`,
-			BibString{
-				kind:  BibStringLiteral,
-				value: `hello world`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 10, EOF: false},
-				},
-			},
-			BibString{
-				kind:  BibStringOther,
-				value: ``,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
-				},
-			},
-		},
-		{
-			"with an @ sign",
-			`hello@world`,
-			BibString{
-				kind:  BibStringLiteral,
-				value: `hello@world`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 10, EOF: false},
-				},
-			},
-			BibString{
-				kind:  BibStringOther,
-				value: ``,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
-				},
-			},
-		},
-		{
-			"with an \" sign",
-			`hello"world`,
-			BibString{
-				kind:  BibStringLiteral,
-				value: `hello"world`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 10, EOF: false},
-				},
-			},
-			BibString{
-				kind:  BibStringOther,
-				value: ``,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
-				},
-			},
-		},
-		{
-			"surrounding space",
-			`hello  world     `,
-			BibString{
-				kind:  BibStringLiteral,
-				value: `hello  world`,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 0, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 11, EOF: false},
-				},
-			},
-			BibString{
-				kind:  BibStringOther,
-				value: `     `,
-				source: utils.ReaderRange{
-					Start: utils.ReaderPosition{Line: 0, Column: 12, EOF: false},
-					End:   utils.ReaderPosition{Line: 0, Column: 16, EOF: false},
-				},
-			},
-		},
+		{"empty", `,`, "0001_empty"},
+		{"one character", `a`, "0002_one_character"},
+		{"space", `hello world`, "0003_space"},
+		{"with an @ sign", `hello@world`, "0004_with_at_sign"},
+		{"with an \" sign", `hello"world`, "0005_with_quote_sign"},
+		{"surrounding space", `hello  world     `, "0006_surrounding_space"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
+			// read test assets
+			var wantLit, wantSpace BibString
+			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_literal", tt.asset+"_lit.json"), &wantLit)
+			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_literal", tt.asset+"_space.json"), &wantSpace)
+
+			// call readLiteral
 			gotLit, gotSpace, err := readLiteral(utils.NewRuneReaderFromString(tt.input + "},"))
 			if (err != nil) != false {
 				t.Errorf("BibString.readLiteral() error = %v, wantErr %v", err, false)
 				return
 			}
-			if !reflect.DeepEqual(gotLit, tt.wantLit) {
-				t.Errorf("BibString.readLiteral() gotLit = %v, wantLit %v", gotLit, tt.wantLit)
+			if !reflect.DeepEqual(gotLit, wantLit) {
+				t.Errorf("BibString.readLiteral() gotLit = %v, wantLit %v", gotLit, wantLit)
 			}
-			if !reflect.DeepEqual(gotSpace, tt.wantSpace) {
-				t.Errorf("BibString.readLiteral() gotSpace = %v, wantSpace %v", gotSpace, tt.wantSpace)
+			if !reflect.DeepEqual(gotSpace, wantSpace) {
+				t.Errorf("BibString.readLiteral() gotSpace = %v, wantSpace %v", gotSpace, wantSpace)
 			}
 		})
 	}

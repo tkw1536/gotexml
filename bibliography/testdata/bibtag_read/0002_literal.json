@@ -1,0 +1,58 @@
+{
+    "prefix": {
+        "kind": "",
+        "value": "",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 0
+            },
+            "end": {
+                "line": 0,
+                "column": 0
+            }
+        }
+    },
+    "elements": [
+        {
+            "Value": {
+                "kind": "LITERAL",
+                "value": "value",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 0
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 4
+                    }
+                }
+            },
+            "Suffix": {
+                "kind": "",
+                "value": "",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 5
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 5
+                    }
+                }
+            }
+        }
+    ],
+    "source": {
+        "start": {
+            "line": 0,
+            "column": 0
+        },
+        "end": {
+            "line": 0,
+            "column": 4
+        }
+    }
+}

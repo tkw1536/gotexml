@@ -9,25 +9,20 @@ import (
 
 // BibEntry is an entry within a BibFile
 type BibEntry struct {
-	prefix BibString // spaces before everything
+	Prefix BibString `json:"prefix"` // Spaces before the BibString
 
-	kind       BibString // the type (e.g. 'string' for '@string{}')
-	kindSuffix BibString // the (space) suffix for this entry
+	Kind       BibString `json:"kind"`       // the type of this BibEntry, a literal succeeding '@'
+	KindSuffix BibString `json:"kindSuffix"` // spaces behind the kind
 
-	tags []BibTag // elements of this BibTag
+	Tags []BibTag `json:"tags"` // tags contained in this BibEntry
 
-	source utils.ReaderRange // source of this bibtag
-}
-
-// Source returns the source of this BibEntry
-func (be *BibEntry) Source() utils.ReaderRange {
-	return be.source
+	Source utils.ReaderRange `json:"source"` // source of this bibtag
 }
 
 func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 	// skip ahead until we have an '@' preceeded by a space or the beginning of the string
 	hasPrevSpace := true
-	entry.prefix.value, entry.prefix.source, err = reader.ReadWhile(func(r rune) (c bool) {
+	entry.Prefix.Value, entry.Prefix.Source, err = reader.ReadWhile(func(r rune) (c bool) {
 		c = !hasPrevSpace || r != '@'
 		hasPrevSpace = unicode.IsSpace(r)
 		return
@@ -50,10 +45,10 @@ func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 		err = utils.NewErrorF(reader, "Expected to find an '@' but got %q", char)
 		return
 	}
-	entry.source.Start = pos
+	entry.Source.Start = pos
 
 	// read the literal and the appropriate suffix
-	entry.kind, entry.kindSuffix, err = readLiteral(reader)
+	entry.Kind, entry.KindSuffix, err = readLiteral(reader)
 	if err != nil {
 		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read entry")
 		return
@@ -89,7 +84,7 @@ func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 		}
 
 		// append the tag to the known list of tags
-		entry.tags = append(entry.tags, t)
+		entry.Tags = append(entry.Tags, t)
 
 		// read the next char
 		char, pos, err = reader.Read()
@@ -114,7 +109,7 @@ func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 	}
 
 	// the last source entry
-	entry.source.End = pos
+	entry.Source.End = pos
 
 	// and return the element
 	return
