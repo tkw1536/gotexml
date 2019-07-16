@@ -7,24 +7,6 @@ import (
 	"github.com/tkw1536/gotexml/utils"
 )
 
-func TestBibString_NormalizeValue(t *testing.T) {
-	tests := []struct {
-		name   string
-		before *BibString
-		after  *BibString
-	}{
-		{"normalize simple value", &BibString{value: "HeLlO wOrLd"}, &BibString{value: "hello world"}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			tt.before.NormalizeValue()
-			if !reflect.DeepEqual(tt.before, tt.after) {
-				t.Errorf("BibString.NormalizeValue() = %v, want %v", tt.before, tt.after)
-			}
-		})
-	}
-}
-
 func TestBibString_Append(t *testing.T) {
 	tests := []struct {
 		name   string

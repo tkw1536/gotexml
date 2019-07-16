@@ -28,26 +28,6 @@ const (
 	BibStringEvaluated BibStringKind = "EVALUATED" // anything that has been evaluated (original information has been lost)
 )
 
-// Kind gets the kind of this BibString
-func (bs *BibString) Kind() BibStringKind {
-	return bs.kind
-}
-
-// Value gets the value of this BibString
-func (bs *BibString) Value() string {
-	return bs.value
-}
-
-// Source returns the source of this BibString
-func (bs *BibString) Source() utils.ReaderRange {
-	return bs.source
-}
-
-// NormalizeValue normalizes the value of this BibString
-func (bs *BibString) NormalizeValue() {
-	bs.value = strings.ToLower(bs.value)
-}
-
 // Append appends the value of another bibstring to this bibstring
 // This operation skips all sanity checks, including legality and validity of the appended string.
 // After calling this function Kind() will return BibStringEvaluated
