@@ -88,6 +88,8 @@ var testOutput = []struct {
 	{rune(0), ReaderPosition{7, 0, true}},
 }
 
+var testOutputLength = len(testOutput)
+
 func TestRuneReader_Read(t *testing.T) {
 
 	raw := makeTestReader()
@@ -113,6 +115,16 @@ func TestRuneReader_Read(t *testing.T) {
 				t.Errorf("RuneReader.Read() gotPOS = %v, want %v", gotPos, tt.wantPos)
 			}
 		})
+	}
+}
+
+func Benchmark_Read(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		reader := makeTestReader()
+
+		for r := 0; r < testOutputLength; r++ {
+			reader.Read()
+		}
 	}
 }
 
@@ -158,6 +170,17 @@ func TestRuneReader_PeekEat(t *testing.T) {
 			}
 
 		})
+	}
+}
+
+func Benchmark_PeekEat(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		reader := makeTestReader()
+
+		for r := 0; r < testOutputLength; r++ {
+			reader.Peek()
+			reader.Eat()
+		}
 	}
 }
 
@@ -216,6 +239,18 @@ func TestRuneReader_ReadUnread(t *testing.T) {
 			}
 
 		})
+	}
+}
+
+func Benchmark_ReadUnread(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		reader := makeTestReader()
+
+		for r := 0; r < testOutputLength; r++ {
+			r, p, _ := reader.Read()
+			reader.Unread(r, p)
+			reader.Read()
+		}
 	}
 }
 
@@ -289,6 +324,19 @@ func TestRuneReader_ReadUnreadPeekEat(t *testing.T) {
 	}
 }
 
+func Benchmark_ReadUnreadPeekEat(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		reader := makeTestReader()
+
+		for r := 0; r < testOutputLength; r++ {
+			r, p, _ := reader.Read()
+			reader.Unread(r, p)
+			reader.Peek()
+			reader.Eat()
+		}
+	}
+}
+
 func TestRuneReader_ReadWhile(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -342,6 +390,13 @@ func TestRuneReader_ReadWhile(t *testing.T) {
 	}
 }
 
+func Benchmark_ReadWhile(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		reader := makeTestReader()
+		reader.ReadWhile(func(_ rune) bool { return true })
+	}
+}
+
 func TestRuneReader_EatWhile(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -384,5 +439,12 @@ func TestRuneReader_EatWhile(t *testing.T) {
 				t.Errorf("RuneReader.GetPosition() gotPos = %v, want %v", gotPos, tt.wantPos)
 			}
 		})
+	}
+}
+
+func Benchmark_EatWhile(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		reader := makeTestReader()
+		reader.ReadWhile(func(_ rune) bool { return true })
 	}
 }
