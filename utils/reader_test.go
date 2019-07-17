@@ -92,18 +92,18 @@ var testOutputLength = len(testOutput)
 
 func TestRuneReader_Read(t *testing.T) {
 
-	raw := makeTestReader()
+	reader := makeTestReader()
 
 	for i, tt := range testOutput {
 		t.Run(fmt.Sprintf("read character %d", i), func(t *testing.T) {
 			// read the current position
-			gotPos := raw.Position()
+			gotPos := reader.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
 			}
 
-			gotR, gotPos, err := raw.Read()
+			gotR, gotPos, err := reader.Read()
 			if (err != nil) != false {
 				t.Errorf("RuneReader.Read() error = %v, wantErr %v", err, false)
 				return
@@ -130,20 +130,20 @@ func Benchmark_Read(b *testing.B) {
 
 func TestRuneReader_PeekEat(t *testing.T) {
 
-	raw := makeTestReader()
+	reader := makeTestReader()
 
 	for i, tt := range testOutput {
 		t.Run(fmt.Sprintf("peek + eat character %d", i), func(t *testing.T) {
 
 			// read the current position
-			gotPos := raw.Position()
+			gotPos := reader.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
 			}
 
 			// peek the next character
-			gotR, gotPos, err := raw.Peek()
+			gotR, gotPos, err := reader.Peek()
 			if (err != nil) != false {
 				t.Errorf("RuneReader.Peek() error = %v, wantErr %v", err, false)
 				return
@@ -156,14 +156,14 @@ func TestRuneReader_PeekEat(t *testing.T) {
 			}
 
 			// read the current position (again)
-			gotPos = raw.Position()
+			gotPos = reader.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
 			}
 
 			// eat
-			err = raw.Eat()
+			err = reader.Eat()
 			if (err != nil) != false {
 				t.Errorf("RuneReader.Eat() error = %v, wantErr %v", err, false)
 				return
@@ -186,20 +186,20 @@ func Benchmark_PeekEat(b *testing.B) {
 
 func TestRuneReader_ReadUnread(t *testing.T) {
 
-	raw := makeTestReader()
+	reader := makeTestReader()
 
 	for i, tt := range testOutput {
 		t.Run(fmt.Sprintf("read + unread + reread character %d", i), func(t *testing.T) {
 
 			// read the current position
-			gotPos := raw.Position()
+			gotPos := reader.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
 			}
 
 			// read the next character
-			gotR, gotPos, err := raw.Read()
+			gotR, gotPos, err := reader.Read()
 			if (err != nil) != false {
 				t.Errorf("RuneReader.Read() error = %v, wantErr %v", err, false)
 				return
@@ -212,21 +212,21 @@ func TestRuneReader_ReadUnread(t *testing.T) {
 			}
 
 			// unread it
-			err = raw.Unread(gotR, gotPos)
+			err = reader.Unread(gotR, gotPos)
 			if (err != nil) != false {
 				t.Errorf("RuneReader.Unread() error = %v, wantErr %v", err, false)
 				return
 			}
 
 			// read the current position (again)
-			gotPos = raw.Position()
+			gotPos = reader.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
 			}
 
 			// re-read the next character
-			gotR, gotPos, err = raw.Read()
+			gotR, gotPos, err = reader.Read()
 			if (err != nil) != false {
 				t.Errorf("RuneReader.Read() error = %v, wantErr %v", err, false)
 				return
@@ -256,19 +256,19 @@ func Benchmark_ReadUnread(b *testing.B) {
 
 func TestRuneReader_ReadUnreadPeekEat(t *testing.T) {
 
-	raw := makeTestReader()
+	reader := makeTestReader()
 
 	for i, tt := range testOutput {
 		t.Run(fmt.Sprintf("read + unread + peek + eat character %d", i), func(t *testing.T) {
 			// read the current position
-			gotPos := raw.Position()
+			gotPos := reader.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
 			}
 
 			// read the next character
-			gotR, gotPos, err := raw.Read()
+			gotR, gotPos, err := reader.Read()
 			if (err != nil) != false {
 				t.Errorf("RuneReader.Read() error = %v, wantErr %v", err, false)
 				return
@@ -281,21 +281,21 @@ func TestRuneReader_ReadUnreadPeekEat(t *testing.T) {
 			}
 
 			// unread it
-			err = raw.Unread(gotR, gotPos)
+			err = reader.Unread(gotR, gotPos)
 			if (err != nil) != false {
 				t.Errorf("RuneReader.Unread() error = %v, wantErr %v", err, false)
 				return
 			}
 
 			// read the current position (again)
-			gotPos = raw.Position()
+			gotPos = reader.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
 			}
 
 			// re-peak the next character
-			gotR, gotPos, err = raw.Peek()
+			gotR, gotPos, err = reader.Peek()
 			if (err != nil) != false {
 				t.Errorf("RuneReader.Peek() error = %v, wantErr %v", err, false)
 				return
@@ -308,14 +308,14 @@ func TestRuneReader_ReadUnreadPeekEat(t *testing.T) {
 			}
 
 			// read the current position (again again)
-			gotPos = raw.Position()
+			gotPos = reader.Position()
 			gotPos.EOF = tt.wantPos.EOF // ignore EOF (as this may be different)
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPOS = %v, want %v", gotPos, tt.wantPos)
 			}
 
 			// and eat it
-			err = raw.Eat()
+			err = reader.Eat()
 			if (err != nil) != false {
 				t.Errorf("RuneReader.Eat() error = %v, wantErr %v", err, false)
 				return
@@ -374,8 +374,8 @@ func TestRuneReader_ReadWhile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			raw := makeTestReader()
-			gotS, gotLoc, err := raw.ReadWhile(tt.f)
+			reader := makeTestReader()
+			gotS, gotLoc, err := reader.ReadWhile(tt.f)
 			if (err != nil) != false {
 				t.Errorf("RuneReader.ReadWhile() error = %v, wantErr %v", err, false)
 				return
@@ -425,8 +425,8 @@ func TestRuneReader_EatWhile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			raw := makeTestReader()
-			gotCount, gotErr := raw.EatWhile(tt.f)
+			reader := makeTestReader()
+			gotCount, gotErr := reader.EatWhile(tt.f)
 			if (gotErr != nil) != false {
 				t.Errorf("RuneReader.EatWhile() error = %v, wantErr %v", gotErr, false)
 			}
@@ -434,7 +434,7 @@ func TestRuneReader_EatWhile(t *testing.T) {
 				t.Errorf("RuneReader.EatWhile() count = %v, wantCount %v", gotCount, tt.wantCount)
 			}
 
-			gotPos := raw.Position()
+			gotPos := reader.Position()
 			if !reflect.DeepEqual(gotPos, tt.wantPos) {
 				t.Errorf("RuneReader.GetPosition() gotPos = %v, want %v", gotPos, tt.wantPos)
 			}
