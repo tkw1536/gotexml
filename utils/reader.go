@@ -38,7 +38,7 @@ func (reader *RuneReader) Position() ReaderPosition {
 	return reader.position
 }
 
-// Next reads the next character
+// Read reads the next character from the input and returns it
 func (reader *RuneReader) Read() (r rune, pos ReaderPosition, err error) {
 	pos.Line = reader.position.Line
 	pos.Column = reader.position.Column
@@ -117,7 +117,7 @@ func (reader *RuneReader) Eat() (err error) {
 // Peek peeks into the next character
 func (reader *RuneReader) Peek() (r rune, pos ReaderPosition, err error) {
 	// read the current position
-	pos = reader.Position()
+	pos = reader.position
 
 	// peek the next raw character
 	r, err = reader.peekRaw()
@@ -129,13 +129,15 @@ func (reader *RuneReader) Peek() (r rune, pos ReaderPosition, err error) {
 		return
 	}
 
-	// if we don't have a potentially special character
-	// we can return everything now
-	if !(r == '\n' || r == '\r') {
+	// we need to take care of special characters: '\r\n' and '\n\r'
+	// if we have a '\n', the next character is guaranteed to be a '\n'
+	// (even though the character after might be skipped)
+	if r != '\r' {
 		return
 	}
 
-	// else we fallback to read
+	// however, if we have an '\r', we need to look at the next character too
+	// for this we make use of read, which might be a tad inefficient
 	r, pos, err = reader.Read()
 	if err != nil {
 		return
@@ -220,7 +222,6 @@ func (reader *RuneReader) ReadWhile(f func(r rune) bool) (s string, loc ReaderRa
 
 	// read start position
 	loc.Start = reader.position
-	loc.End = loc.Start
 
 	// keep reading the current rune
 	// as long as there is no EOF
