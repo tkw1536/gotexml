@@ -142,14 +142,22 @@ func (reader *RuneReader) Peek() (r rune, pos ReaderPosition, err error) {
 	}
 
 	// and then unread
-	err = reader.unreadRaw(r, pos, false)
+	err = reader.Unread(r, pos)
 
 	return
 }
 
-// Unread unreads a character
+// Unread unreads a character from the input
 func (reader *RuneReader) Unread(r rune, pos ReaderPosition) error {
-	return reader.unreadRaw(r, pos, false)
+	if reader.hasCache {
+		return errors.New("Cannot unread: Character already cached. ")
+	}
+
+	reader.hasCache = true
+	reader.cache = r
+	reader.position = pos
+
+	return nil
 }
 
 // readRaw reads the next character, without taking care of special newlines
@@ -195,20 +203,6 @@ func (reader *RuneReader) peekRaw() (r rune, err error) {
 		return
 	}
 	err = reader.Reader.UnreadRune()
-	return
-}
-
-// unreadRaw unreads a character
-// When unsafe is true, the check for already having a cached character is skipped
-func (reader *RuneReader) unreadRaw(r rune, pos ReaderPosition, unsafe bool) (err error) {
-	if reader.hasCache && !unsafe {
-		return errors.New("Cannot unread: Character already cached. ")
-	}
-
-	reader.hasCache = true
-	reader.cache = r
-	reader.position = pos
-
 	return
 }
 
