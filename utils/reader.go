@@ -40,43 +40,16 @@ func (reader *RuneReader) Position() ReaderPosition {
 
 // Next reads the next character
 func (reader *RuneReader) Read() (r rune, pos ReaderPosition, err error) {
-	// catch the end-of line
-	var eof bool
-	defer func() {
-		// if something went wrong, don't change the state
-		if err != nil {
-			return
-		}
-
-		// return the current position
-		pos = ReaderPosition{
-			Line:   reader.position.Line,
-			Column: reader.position.Column,
-			EOF:    eof,
-		}
-
-		// and update the position
-
-		if eof {
-			// we are at the end => store eof and don't change position
-			reader.position.EOF = true
-
-		} else if r == '\n' {
-			// we have a newline => set column to 0 and increase line counter
-			reader.position.Column = 0
-			reader.position.Line++
-
-		} else {
-			// else we only increase the column
-			reader.position.Column++
-		}
-	}()
+	pos.Line = reader.position.Line
+	pos.Column = reader.position.Column
 
 	// read the next rune
 	a, err := reader.readRaw()
 	if err != nil {
 		if err == io.EOF {
-			eof = true
+			pos.EOF = true
+			reader.position.EOF = true
+
 			err = nil
 		}
 		return
@@ -90,13 +63,18 @@ func (reader *RuneReader) Read() (r rune, pos ReaderPosition, err error) {
 		// if we have an EOF next, this will be re-read
 		if err == io.EOF {
 			r = '\n'
-			eof = false
+			pos.EOF = false
 			err = nil
+
+			// we did have a linebreak
+			reader.position.Column = 0
+			reader.position.Line++
+
 			return
 
 			// if we have an error, pass that along
 		} else if err != nil {
-			eof = false
+			pos.EOF = false
 			return
 		}
 
@@ -104,10 +82,24 @@ func (reader *RuneReader) Read() (r rune, pos ReaderPosition, err error) {
 		if (a == '\n' && b == '\r') || (a == '\r' && b == '\n') {
 			reader.eatRaw() // skip the next character
 			r = '\n'
-			eof = false
+			pos.EOF = false
 			err = nil
+
+			// we did have a linebreak
+			reader.position.Column = 0
+			reader.position.Line++
+
 			return
+		} else if a == '\n' {
+			// we did have a linebreak
+			reader.position.Column = 0
+			reader.position.Line++
+		} else {
+			reader.position.Column++
 		}
+
+	} else {
+		reader.position.Column++
 	}
 
 	// return a
