@@ -137,15 +137,16 @@ func (reader *RuneReader) Peek() (r rune, pos ReaderPosition, err error) {
 	}
 
 	// however, if we have an '\r', we need to look at the next character too
-	// for this we make use of read, which might be a tad inefficient
-	r, pos, err = reader.Read()
+	// but as we are peeking, we need to cache that
+	reader.cache, reader.position, err = reader.Read()
 	if err != nil {
 		return
 	}
+	reader.hasCache = true
 
-	// and then unread
-	err = reader.Unread(r, pos)
-
+	// return the cached value
+	r = reader.cache
+	pos = reader.position
 	return
 }
 
