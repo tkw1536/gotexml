@@ -1,0 +1,145 @@
+{
+    "prefix": {
+        "kind": "",
+        "value": "",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 0
+            },
+            "end": {
+                "line": 0,
+                "column": 0
+            }
+        }
+    },
+    "kind": {
+        "kind": "LITERAL",
+        "value": "STRING",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 1
+            },
+            "end": {
+                "line": 0,
+                "column": 6
+            }
+        }
+    },
+    "kindSuffix": {
+        "kind": "",
+        "value": "",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 7
+            },
+            "end": {
+                "line": 0,
+                "column": 7
+            }
+        }
+    },
+    "tags": [
+        {
+            "prefix": {
+                "kind": "",
+                "value": "",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 8
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 8
+                    }
+                }
+            },
+            "elements": [
+                {
+                    "Value": {
+                        "kind": "LITERAL",
+                        "value": "premessage",
+                        "source": {
+                            "start": {
+                                "line": 0,
+                                "column": 8
+                            },
+                            "end": {
+                                "line": 0,
+                                "column": 17
+                            }
+                        }
+                    },
+                    "Suffix": {
+                        "kind": "",
+                        "value": " = ",
+                        "source": {
+                            "start": {
+                                "line": 0,
+                                "column": 18
+                            },
+                            "end": {
+                                "line": 0,
+                                "column": 20
+                            }
+                        }
+                    },
+                    "isKeyElement": true
+                },
+                {
+                    "Value": {
+                        "kind": "QUOTE",
+                        "value": "This is the LaTeX preamble shared by all KWARC *.bib files.  ",
+                        "source": {
+                            "start": {
+                                "line": 0,
+                                "column": 21
+                            },
+                            "end": {
+                                "line": 0,
+                                "column": 83
+                            }
+                        }
+                    },
+                    "Suffix": {
+                        "kind": "",
+                        "value": "",
+                        "source": {
+                            "start": {
+                                "line": 0,
+                                "column": 84
+                            },
+                            "end": {
+                                "line": 0,
+                                "column": 84
+                            }
+                        }
+                    }
+                }
+            ],
+            "source": {
+                "start": {
+                    "line": 0,
+                    "column": 8
+                },
+                "end": {
+                    "line": 0,
+                    "column": 83
+                }
+            }
+        }
+    ],
+    "source": {
+        "start": {
+            "line": 0,
+            "column": 0
+        },
+        "end": {
+            "line": 0,
+            "column": 84
+        }
+    }
+}

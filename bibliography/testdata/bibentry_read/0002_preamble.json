@@ -1,0 +1,114 @@
+{
+    "prefix": {
+        "kind": "",
+        "value": "",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 0
+            },
+            "end": {
+                "line": 0,
+                "column": 0
+            }
+        }
+    },
+    "kind": {
+        "kind": "LITERAL",
+        "value": "PREAMBLE",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 1
+            },
+            "end": {
+                "line": 0,
+                "column": 8
+            }
+        }
+    },
+    "kindSuffix": {
+        "kind": "",
+        "value": "",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 9
+            },
+            "end": {
+                "line": 0,
+                "column": 9
+            }
+        }
+    },
+    "tags": [
+        {
+            "prefix": {
+                "kind": "",
+                "value": "\n",
+                "source": {
+                    "start": {
+                        "line": 0,
+                        "column": 10
+                    },
+                    "end": {
+                        "line": 0,
+                        "column": 10
+                    }
+                }
+            },
+            "elements": [
+                {
+                    "Value": {
+                        "kind": "BRACKET",
+                        "value": "\\providecommand\\seen{seen }\n\\providecommand\\selfedit{}\n\\providecommand\\webpageat{web page at }\n\\providecommand\\homepageat{home page at }\n\\providecommand\\projectpageat{project page at }\n\\providecommand\\systempageat{system home page at }\n\\providecommand\\svnrepoat{Subversion repository at }\n\\providecommand\\January{January}\n\\providecommand\\February{February}\n\\providecommand\\Feb{February}\n\\providecommand\\March{March}\n\\providecommand\\April{April}\n\\providecommand\\May{May}\n\\providecommand\\June{June}\n\\providecommand\\July{July}\n\\providecommand\\August{August}\n\\providecommand\\September{September}   \n\\providecommand\\October{October}\n\\providecommand\\November{November}\n\\providecommand\\December{December}\n\\providecommand\\AUSTRALIA{Australia}   \n\\providecommand\\ROMANIA{Romania}\n\\providecommand\\MEXICO{Mexico}\n\\providecommand\\ITALY{Italy}\n\\providecommand\\USA{USA}\n\\providecommand\\IRELAND{Ireland}\n\\providecommand\\HUNGARY{Hungary}\n\\providecommand\\JAPAN{Japan}\n\\providecommand\\CANADA{Canada}\n\\providecommand\\SPAIN{Spain}\n\\providecommand\\NETHERLANDS{Netherlands}\n\\providecommand\\UK{UK}\n\\providecommand\\SWEDEN{Sweden}\n\\providecommand\\GERMANY{Germany}\n\\providecommand\\openmath{OpenMath}\n\\providecommand\\fc{forthcoming}\n\\providecommand\\PROC{Proceedings}\n\\providecommand\\omdoc{OMDoc}\n\\providecommand\\activemath{ActiveMath} \n\\hyphenation{Wiki-Sym}",
+                        "source": {
+                            "start": {
+                                "line": 1,
+                                "column": 0
+                            },
+                            "end": {
+                                "line": 40,
+                                "column": 22
+                            }
+                        }
+                    },
+                    "Suffix": {
+                        "kind": "",
+                        "value": "",
+                        "source": {
+                            "start": {
+                                "line": 40,
+                                "column": 23
+                            },
+                            "end": {
+                                "line": 40,
+                                "column": 23
+                            }
+                        }
+                    }
+                }
+            ],
+            "source": {
+                "start": {
+                    "line": 1,
+                    "column": 0
+                },
+                "end": {
+                    "line": 40,
+                    "column": 22
+                }
+            }
+        }
+    ],
+    "source": {
+        "start": {
+            "line": 0,
+            "column": 0
+        },
+        "end": {
+            "line": 40,
+            "column": 23
+        }
+    }
+}

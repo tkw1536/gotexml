@@ -22,10 +22,14 @@ type BibEntry struct {
 func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 	// skip ahead until we have an '@' preceeded by a space or the beginning of the string
 	hasPrevSpace := true
-	entry.Prefix.Value, entry.Prefix.Source, err = reader.ReadWhile(func(r rune) (c bool) {
-		c = !hasPrevSpace || r != '@'
+	entry.Prefix.Value, entry.Prefix.Source, err = reader.ReadWhile(func(r rune) bool {
+		if hasPrevSpace && r == '@' {
+			return false
+		}
+
 		hasPrevSpace = unicode.IsSpace(r)
-		return
+		return true
+
 	})
 	if err != nil {
 		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read entry")
@@ -41,7 +45,7 @@ func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 		err = io.EOF
 		return
 	}
-	if char != '{' {
+	if char != '@' {
 		err = utils.NewErrorF(reader, "Expected to find an '@' but got %q", char)
 		return
 	}
