@@ -57,3 +57,17 @@ func Test_readTag(t *testing.T) {
 		})
 	}
 }
+
+func Benchmark_ReadTag(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		readTag(utils.NewRuneReaderFromString(`` + ", "))
+		readTag(utils.NewRuneReaderFromString(`value` + ", "))
+		readTag(utils.NewRuneReaderFromString(`"value"` + ", "))
+		readTag(utils.NewRuneReaderFromString(`{value}` + ", "))
+		readTag(utils.NewRuneReaderFromString(`value1 # value2` + ", "))
+		readTag(utils.NewRuneReaderFromString(`"value1" # value2` + ", "))
+		readTag(utils.NewRuneReaderFromString(`name = value` + ", "))
+		readTag(utils.NewRuneReaderFromString(`name=value` + ", "))
+		readTag(utils.NewRuneReaderFromString(`name=a#"b"` + ", "))
+	}
+}

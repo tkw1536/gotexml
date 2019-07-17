@@ -92,6 +92,15 @@ func TestBibString_readQuote(t *testing.T) {
 	}
 }
 
+func Benchmark_ReadQuote(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		readQuote(utils.NewRuneReaderFromString(`""` + " , "))
+		readQuote(utils.NewRuneReaderFromString(`"hello"` + " , "))
+		readQuote(utils.NewRuneReaderFromString(`"{\"}"` + " , "))
+		readQuote(utils.NewRuneReaderFromString(`"hello world"` + " , "))
+	}
+}
+
 func TestBibFile_readBrace(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -102,7 +111,7 @@ func TestBibFile_readBrace(t *testing.T) {
 		{"simple braces", `{hello}`, "0002_simple"},
 		{"nested braces", `{hello{world}}`, "0003_nested"},
 		{"brace with open \\", `{hello \{world}}`, "0004_open_slashes"},
-		{"brace with close \\", `{hello world\}}`, "0004_close_slashes"},
+		{"brace with close \\", `{hello world\}}`, "0005_close_slashes"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -121,6 +130,16 @@ func TestBibFile_readBrace(t *testing.T) {
 				t.Errorf("BibString.readBrace() = %v, want %v", gotBrace, wantBrace)
 			}
 		})
+	}
+}
+
+func Benchmark_ReadBrace(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		readBrace(utils.NewRuneReaderFromString(`{}`))
+		readBrace(utils.NewRuneReaderFromString(`{hello}`))
+		readBrace(utils.NewRuneReaderFromString(`{hello{world}}`))
+		readBrace(utils.NewRuneReaderFromString(`{hello \{world}}`))
+		readBrace(utils.NewRuneReaderFromString(`{hello world\}}`))
 	}
 }
 
@@ -158,5 +177,16 @@ func TestBibFile_readLiteral(t *testing.T) {
 				t.Errorf("BibString.readLiteral() gotSpace = %v, wantSpace %v", gotSpace, wantSpace)
 			}
 		})
+	}
+}
+
+func Benchmark_ReadLiteral(b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		readLiteral(utils.NewRuneReaderFromString(`,` + "},"))
+		readLiteral(utils.NewRuneReaderFromString(`a` + "},"))
+		readLiteral(utils.NewRuneReaderFromString(`hello world` + "},"))
+		readLiteral(utils.NewRuneReaderFromString(`hello@world` + "},"))
+		readLiteral(utils.NewRuneReaderFromString(`hello"world` + "},"))
+		readLiteral(utils.NewRuneReaderFromString(`hello  world     ` + "},"))
 	}
 }
