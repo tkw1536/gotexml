@@ -92,12 +92,23 @@ func TestBibString_readQuote(t *testing.T) {
 	}
 }
 
-func Benchmark_ReadQuote(b *testing.B) {
+func Benchmark_ReadQuote_Empty(b *testing.B) {
+	benchmarkReadQuote(`""`, b)
+}
+func Benchmark_ReadQuote_Simple(b *testing.B) {
+	benchmarkReadQuote(`"hello"`, b)
+}
+func Benchmark_ReadQuote_WithCurly(b *testing.B) {
+	benchmarkReadQuote(`"{\"}"`, b)
+}
+func Benchmark_ReadQuote_WithSpaces(b *testing.B) {
+	benchmarkReadQuote(`"hello world"`, b)
+}
+
+func benchmarkReadQuote(content string, b *testing.B) {
+	p := content + " , "
 	for n := 0; n < b.N; n++ {
-		readQuote(utils.NewRuneReaderFromString(`""` + " , "))
-		readQuote(utils.NewRuneReaderFromString(`"hello"` + " , "))
-		readQuote(utils.NewRuneReaderFromString(`"{\"}"` + " , "))
-		readQuote(utils.NewRuneReaderFromString(`"hello world"` + " , "))
+		readQuote(utils.NewRuneReaderFromString(p))
 	}
 }
 
@@ -133,13 +144,29 @@ func TestBibFile_readBrace(t *testing.T) {
 	}
 }
 
-func Benchmark_ReadBrace(b *testing.B) {
+func Benchmark_ReadBrace_Empty(b *testing.B) {
+	benchmarkReadBrace(`{}`, b)
+}
+
+func Benchmark_ReadBrace_Simple(b *testing.B) {
+	benchmarkReadBrace(`{hello}`, b)
+}
+
+func Benchmark_ReadBrace_Nested(b *testing.B) {
+	benchmarkReadBrace(`{hello{world}}`, b)
+}
+
+func Benchmark_ReadBrace_OpenSlashes(b *testing.B) {
+	benchmarkReadBrace(`{hello \{world}}`, b)
+}
+
+func Benchmark_ReadBrace_CloseSlashes(b *testing.B) {
+	benchmarkReadBrace(`{hello world\}}`, b)
+}
+
+func benchmarkReadBrace(content string, b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		readBrace(utils.NewRuneReaderFromString(`{}`))
-		readBrace(utils.NewRuneReaderFromString(`{hello}`))
-		readBrace(utils.NewRuneReaderFromString(`{hello{world}}`))
-		readBrace(utils.NewRuneReaderFromString(`{hello \{world}}`))
-		readBrace(utils.NewRuneReaderFromString(`{hello world\}}`))
+		readBrace(utils.NewRuneReaderFromString(content))
 	}
 }
 
@@ -180,13 +207,28 @@ func TestBibFile_readLiteral(t *testing.T) {
 	}
 }
 
-func Benchmark_ReadLiteral(b *testing.B) {
+func Benchmark_ReadLiteral_Empty(b *testing.B) {
+	benchmarkReadLiteral(`,`, b)
+}
+func Benchmark_ReadLiteral_OneCharacter(b *testing.B) {
+	benchmarkReadLiteral(`a`, b)
+}
+func Benchmark_ReadLiteral_Space(b *testing.B) {
+	benchmarkReadLiteral(`hello world`, b)
+}
+func Benchmark_ReadLiteral_WithAtSign(b *testing.B) {
+	benchmarkReadLiteral(`hello@world`, b)
+}
+func Benchmark_ReadLiteral_withQuoteSign(b *testing.B) {
+	benchmarkReadLiteral(`hello"world`, b)
+}
+func Benchmark_ReadLiteral_SurroundingSpace(b *testing.B) {
+	benchmarkReadLiteral(`hello  world     `, b)
+}
+
+func benchmarkReadLiteral(content string, b *testing.B) {
+	p := content + "},"
 	for n := 0; n < b.N; n++ {
-		readLiteral(utils.NewRuneReaderFromString(`,` + "},"))
-		readLiteral(utils.NewRuneReaderFromString(`a` + "},"))
-		readLiteral(utils.NewRuneReaderFromString(`hello world` + "},"))
-		readLiteral(utils.NewRuneReaderFromString(`hello@world` + "},"))
-		readLiteral(utils.NewRuneReaderFromString(`hello"world` + "},"))
-		readLiteral(utils.NewRuneReaderFromString(`hello  world     ` + "},"))
+		readLiteral(utils.NewRuneReaderFromString(p))
 	}
 }

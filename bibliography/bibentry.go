@@ -19,6 +19,10 @@ type BibEntry struct {
 	Source utils.ReaderRange `json:"source"` // source of this bibtag
 }
 
+// readEntry reads a BibTag entry from reader
+// Tags end with '}' as a terminating character.
+// when err is io.EOF, no beginning tag was found and only Prefix is populated
+// else when err is non-nil, it is an instance of utils.ReaderError
 func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 	// skip ahead until we have an '@' preceeded by a space or the beginning of the string
 	hasPrevSpace := true
@@ -33,6 +37,7 @@ func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 	})
 	if err != nil {
 		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read entry")
+		return
 	}
 
 	// read an '@' sign or bail out
@@ -76,12 +81,9 @@ func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 	// continously read tags from this entry
 	// until we have an io.EOF error reported
 	var t BibTag
-	for true {
-		// read the next tag and break on EOF
+	for t.Suffix.Value != "}" {
+		// read the next tag
 		t, err = readTag(reader)
-		if err == io.EOF {
-			break
-		}
 		if err != nil {
 			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read entry")
 			return
@@ -89,27 +91,6 @@ func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 
 		// append the tag to the known list of tags
 		entry.Tags = append(entry.Tags, t)
-
-		// read the next char
-		char, pos, err = reader.Read()
-		if err != nil {
-			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read entry")
-			return
-		}
-		if pos.EOF {
-			err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read entry")
-			return
-		}
-
-		// } => end of entry
-		if char == '}' {
-			break
-		}
-
-		// if we don't have a "," (i.e. next entry), something went wrong
-		if char != ',' {
-			err = utils.NewErrorF(reader, "Expected to find a ',' or '}' but got %q", char)
-		}
 	}
 
 	// the last source entry

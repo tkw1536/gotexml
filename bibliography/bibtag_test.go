@@ -1,7 +1,6 @@
 package bibliography
 
 import (
-	"io"
 	"path"
 	"reflect"
 	"testing"
@@ -11,22 +10,22 @@ import (
 
 func Test_readTag(t *testing.T) {
 	tests := []struct {
-		name    string
-		input   string
-		asset   string
-		wantEOF bool
+		name  string
+		input string
+		asset string
 	}{
 		// value only
-		{"empty tag", ``, "0001_empty", true},
-		{"literal value", `value`, "0002_literal", false},
-		{"quoted value", `"value"`, "0003_quoted", false},
-		{"braced value", `{value}`, "0004_braced", false},
-		{"concated literals", `value1 # value2`, "0005_concated", false},
-		{"concated quote and literal", `"value1" # value2`, "0006_concat_quote_literal", false},
+		{"empty tag", ``, "0001_empty"},
+		{"endingbrace", `}`, "0010_name_compact_value"},
+		{"literal value", `value`, "0002_literal"},
+		{"quoted value", `"value"`, "0003_quoted"},
+		{"braced value", `{value}`, "0004_braced"},
+		{"concated literals", `value1 # value2`, "0005_concated"},
+		{"concated quote and literal", `"value1" # value2`, "0006_concat_quote_literal"},
 		// key = value
-		{"simple name", `name = value`, "0007_key_value", false},
-		{"simple name (compact)", `name=value`, "0008_simple_name_compact", false},
-		{"name + compact value", `name=a#"b"`, "0009_name_compact_value", false},
+		{"simple name", `name = value`, "0007_key_value"},
+		{"simple name (compact)", `name=value`, "0008_simple_name_compact"},
+		{"name + compact value", `name=a#"b"`, "0009_name_compact_value"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -36,15 +35,6 @@ func Test_readTag(t *testing.T) {
 
 			// call readTag
 			gotTag, err := readTag(utils.NewRuneReaderFromString(tt.input + ", "))
-
-			// if we want eof, only test for EOF
-			if tt.wantEOF {
-				if err != io.EOF {
-					t.Errorf("BibTag.readTag() error = %v, wantErr %v", err, io.EOF)
-					return
-				}
-				return
-			}
 
 			if (err != nil) != false {
 				t.Errorf("BibTag.readTag() error = %v, wantErr %v", err, false)
@@ -58,16 +48,45 @@ func Test_readTag(t *testing.T) {
 	}
 }
 
-func Benchmark_ReadTag(b *testing.B) {
+func Benchmark_ReadTag_Empty(b *testing.B) {
+	benchmarkReadTag(``, b)
+}
+
+func Benchmark_ReadTag_Value(b *testing.B) {
+	benchmarkReadTag(`value`, b)
+}
+
+func Benchmark_ReadTag_QuotedValue(b *testing.B) {
+	benchmarkReadTag(`"value"`, b)
+}
+
+func Benchmark_ReadTag_BracketedValue(b *testing.B) {
+	benchmarkReadTag(`{value}`, b)
+}
+
+func Benchmark_ReadTag_Concat(b *testing.B) {
+	benchmarkReadTag(`value1 # value2`, b)
+}
+
+func Benchmark_ReadTag_ComplexConcat(b *testing.B) {
+	benchmarkReadTag(`"value1" # value2`, b)
+}
+
+func Benchmark_ReadTag_KeyValue(b *testing.B) {
+	benchmarkReadTag(`name = value`, b)
+}
+
+func Benchmark_ReadTag_KeyValueCompact(b *testing.B) {
+	benchmarkReadTag(`name=value`, b)
+}
+
+func Benchmark_ReadTag_KeyValueComplex(b *testing.B) {
+	benchmarkReadTag(`name=a#"b"`, b)
+}
+
+func benchmarkReadTag(content string, b *testing.B) {
+	p := content + ", "
 	for n := 0; n < b.N; n++ {
-		readTag(utils.NewRuneReaderFromString(`` + ", "))
-		readTag(utils.NewRuneReaderFromString(`value` + ", "))
-		readTag(utils.NewRuneReaderFromString(`"value"` + ", "))
-		readTag(utils.NewRuneReaderFromString(`{value}` + ", "))
-		readTag(utils.NewRuneReaderFromString(`value1 # value2` + ", "))
-		readTag(utils.NewRuneReaderFromString(`"value1" # value2` + ", "))
-		readTag(utils.NewRuneReaderFromString(`name = value` + ", "))
-		readTag(utils.NewRuneReaderFromString(`name=value` + ", "))
-		readTag(utils.NewRuneReaderFromString(`name=a#"b"` + ", "))
+		readTag(utils.NewRuneReaderFromString(p))
 	}
 }

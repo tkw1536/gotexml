@@ -2,7 +2,6 @@ package bibliography
 
 // TODO: Test me
 import (
-	"io"
 	"unicode"
 
 	"github.com/tkw1536/gotexml/utils"
@@ -13,21 +12,31 @@ import (
 type BibTag struct {
 	Prefix   BibString       `json:"prefix"`   // spaces preceeding this BibTag
 	Elements []BibTagElement `json:"elements"` // elements of this BibTag
+	Suffix   BibString       `json:"suffix"`   // the suffix (i.e. terminating character) of this string
 
 	Source utils.ReaderRange `json:"source"` // source range that contains this BibTag
 }
 
 // BibTagElement represents one element of this BibTag
 type BibTagElement struct {
-	Value        BibString // concrete value of this element
-	Suffix       BibString // space + concatination value of this element
-	IsKeyElement bool      `json:"isKeyElement,omitempty"` // true iff this is a key element
+	Value  BibString      `json:"value"`          // concrete value of this element
+	Suffix BibString      `json:"suffix"`         // space + concatination value of this element
+	Role   TagElementRole `json:"role,omitempty"` // the role of this BibTagElement
 }
 
-// reads a BibTag (which does not include a terminating character) from the source file
-// contains all spaces before a terminating "," or "}"
-// err is either nil, io.EOF or an instance of
-// when io.EOF is returned, this means that no valid BibTag was read and only tag.initialSpace was populated
+// TagElementRole is the role of a BibTagElement
+type TagElementRole string
+
+//kinds of roles that can occur
+const (
+	TagElementNormal TagElementRole = ""     // no special role
+	KeyElementRole   TagElementRole = "key"  // the name of this key
+	TermElementRole  TagElementRole = "term" // a term which will be appended
+)
+
+// readTag reads a (potentially empty) BibTag from reader.
+// Tags end with a character ',' or '}'. These are contained in suffix.
+// when err is no nil, it is an instance of utils.ReaderError.
 func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 	// read spaces at the beginning
 	tag.Prefix.Value, tag.Prefix.Source, err = reader.ReadWhile(unicode.IsSpace)
@@ -53,13 +62,7 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 		return
 	}
 
-	// check if we need to exit
-	if r == '}' || r == ',' {
-		err = io.EOF
-		return
-	}
 	tag.Source.Start = pos
-	prevPos := pos
 
 	hadEqualSign := false       // did we have an equal sign yet?
 	shouldAppendSuffix := false // should we append further spaces to the suffix instead of resetting it
@@ -83,14 +86,13 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 				return
 			}
 
-			// we had an equal sign, so we may now set '='
+			// mark the previous element as as a key
 			hadEqualSign = true
-			tag.Elements[0].IsKeyElement = true
+			tag.Elements[0].Role = KeyElementRole
 
 			// add an '=' to the last suffix
 			tag.Elements[len(tag.Elements)-1].Suffix.Value += string(r)
 			tag.Elements[len(tag.Elements)-1].Suffix.Source.End = pos
-			prevPos = pos
 			shouldAppendSuffix = true
 
 			// after a string, we may no longer have '='s
@@ -108,10 +110,12 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 				return
 			}
 
+			// mark the previous element as being a term
+			tag.Elements[len(tag.Elements)-1].Role = TermElementRole
+
 			// add an '#' to the last suffix
 			tag.Elements[len(tag.Elements)-1].Suffix.Value += string(r)
 			tag.Elements[len(tag.Elements)-1].Suffix.Source.End = pos
-			prevPos = pos
 			shouldAppendSuffix = true
 
 			// after a concat, we may only add another string
@@ -132,7 +136,6 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 			tag.Elements = append(tag.Elements, BibTagElement{
 				Value: temp,
 			})
-			prevPos = temp.Source.End
 			shouldAppendSuffix = false
 
 			// after a quote, either another string is concatinated
@@ -155,7 +158,6 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 			tag.Elements = append(tag.Elements, BibTagElement{
 				Value: temp,
 			})
-			prevPos = temp.Source.End
 			shouldAppendSuffix = false
 
 			// after a brace, we may have an equal sign unless we already had one before
@@ -178,7 +180,6 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 				Suffix: space,
 			})
 
-			prevPos = temp.Source.End
 			shouldAppendSuffix = true
 
 			// after a brace, we may have an equal sign unless we already had one before
@@ -204,11 +205,6 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 		}
 		tag.Elements[len(tag.Elements)-1].Suffix = *l
 
-		// if we read a space, update the last read position
-		if s != "" {
-			prevPos = l.Source.End
-		}
-
 		// peek the next char
 		r, pos, err = reader.Peek()
 		if err != nil {
@@ -221,6 +217,15 @@ func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
 		}
 	}
 
-	tag.Source.End = prevPos
+	// end of source
+	tag.Source.End = pos
+
+	// eat away the closing tag
+	tag.Suffix.Value = string(r)
+	tag.Suffix.Source.Start = pos
+	tag.Suffix.Source.End = pos
+	reader.Eat()
+
+	// and return
 	return
 }

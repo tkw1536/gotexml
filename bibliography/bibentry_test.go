@@ -2,7 +2,6 @@ package bibliography
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
@@ -32,12 +31,12 @@ func Test_readEntry(t *testing.T) {
 			}
 			defer file.Close()
 
+			// call readEntry
+			gotEntry, err := readEntry(utils.NewRuneReaderFromReader(file))
+
 			// read the assets
 			var wantEntry BibEntry
 			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibentry_read", tt.asset+".json"), &wantEntry)
-
-			// call readEntry
-			gotEntry, err := readEntry(utils.NewRuneReaderFromReader(file))
 
 			// if we want eof, only test for EOF
 			if tt.wantEOF {
@@ -60,30 +59,27 @@ func Test_readEntry(t *testing.T) {
 	}
 }
 
-func Benchmark_ReadEntry(b *testing.B) {
+func Benchmark_ReadEntry_Empty(b *testing.B) {
+	benchmarkReadEntry(emptyEntryText, b)
+}
 
+func Benchmark_ReadEntry_Preamble(b *testing.B) {
+	benchmarkReadEntry(preambleEntryText, b)
+}
+func Benchmark_ReadEntry_String(b *testing.B) {
+	benchmarkReadEntry(stringEntryText, b)
+}
+func Benchmark_ReadEntry_Inproceedings(b *testing.B) {
+	benchmarkReadEntry(inproceedingsEntryText, b)
+}
+
+func benchmarkReadEntry(content string, b *testing.B) {
 	for n := 0; n < b.N; n++ {
-		for _, a := range benchmarkReadEntryAssets {
-			readEntry(utils.NewRuneReaderFromString(a))
-		}
+		readEntry(utils.NewRuneReaderFromString(content))
 	}
 }
 
-var benchmarkReadEntryAssets []string
-
-func init() {
-	// read in all the assets for the benchmark
-	filenames := []string{"0001_empty", "0002_preamble", "0003_string", "0004_inproceedings"}
-	benchmarkReadEntryAssets = make([]string, len(filenames))
-
-	var err error
-	var d []byte
-	for idx, asset := range filenames {
-		d, err = ioutil.ReadFile(path.Join("testdata", "bibentry_read", asset+".json"))
-		if err != nil {
-			panic(err)
-		}
-		benchmarkReadEntryAssets[idx] = string(d)
-	}
-
-}
+var emptyEntryText = utils.ReadFileOrPanic(path.Join("testdata", "bibentry_read", "0001_empty.bib"))
+var preambleEntryText = utils.ReadFileOrPanic(path.Join("testdata", "bibentry_read", "0002_preamble.bib"))
+var stringEntryText = utils.ReadFileOrPanic(path.Join("testdata", "bibentry_read", "0003_string.bib"))
+var inproceedingsEntryText = utils.ReadFileOrPanic(path.Join("testdata", "bibentry_read", "0004_inproceedings.bib"))

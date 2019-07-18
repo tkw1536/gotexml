@@ -15,7 +15,7 @@
     },
     "elements": [
         {
-            "Value": {
+            "value": {
                 "kind": "LITERAL",
                 "value": "name",
                 "source": {
@@ -29,7 +29,7 @@
                     }
                 }
             },
-            "Suffix": {
+            "suffix": {
                 "kind": "",
                 "value": "=",
                 "source": {
@@ -43,10 +43,10 @@
                     }
                 }
             },
-            "isKeyElement": true
+            "role": "key"
         },
         {
-            "Value": {
+            "value": {
                 "kind": "LITERAL",
                 "value": "a",
                 "source": {
@@ -60,7 +60,7 @@
                     }
                 }
             },
-            "Suffix": {
+            "suffix": {
                 "kind": "",
                 "value": "#",
                 "source": {
@@ -73,10 +73,11 @@
                         "column": 6
                     }
                 }
-            }
+            },
+            "role": "term"
         },
         {
-            "Value": {
+            "value": {
                 "kind": "QUOTE",
                 "value": "b",
                 "source": {
@@ -90,7 +91,7 @@
                     }
                 }
             },
-            "Suffix": {
+            "suffix": {
                 "kind": "",
                 "value": "",
                 "source": {
@@ -106,6 +107,20 @@
             }
         }
     ],
+    "suffix": {
+        "kind": "",
+        "value": ",",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 10
+            },
+            "end": {
+                "line": 0,
+                "column": 10
+            }
+        }
+    },
     "source": {
         "start": {
             "line": 0,
@@ -113,7 +128,7 @@
         },
         "end": {
             "line": 0,
-            "column": 9
+            "column": 10
         }
     }
 }
