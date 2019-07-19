@@ -32,7 +32,8 @@ func Test_readEntry(t *testing.T) {
 			defer file.Close()
 
 			// call readEntry
-			gotEntry, err := readEntry(utils.NewRuneReaderFromReader(file))
+			gotEntry := &BibEntry{}
+			err = gotEntry.readEntry(utils.NewRuneReaderFromReader(file))
 
 			// read the assets
 			var wantEntry BibEntry
@@ -52,8 +53,8 @@ func Test_readEntry(t *testing.T) {
 				return
 			}
 
-			if !reflect.DeepEqual(gotEntry, wantEntry) {
-				t.Errorf("BibTag.readEntry() = %v, want %v", gotEntry, wantEntry)
+			if !reflect.DeepEqual(gotEntry, &wantEntry) {
+				t.Errorf("BibTag.readEntry() = %v, want %v", gotEntry, &wantEntry)
 			}
 		})
 	}
@@ -74,8 +75,9 @@ func Benchmark_ReadEntry_Inproceedings(b *testing.B) {
 }
 
 func benchmarkReadEntry(content string, b *testing.B) {
+	entry := &BibEntry{}
 	for n := 0; n < b.N; n++ {
-		readEntry(utils.NewRuneReaderFromString(content))
+		entry.readEntry(utils.NewRuneReaderFromString(content))
 	}
 }
 

@@ -37,7 +37,7 @@ const (
 // readTag reads a (potentially empty) BibTag from reader.
 // Tags end with a character ',' or '}'. These are contained in suffix.
 // when err is no nil, it is an instance of utils.ReaderError.
-func readTag(reader *utils.RuneReader) (tag BibTag, err error) {
+func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 	// read spaces at the beginning
 	tag.Prefix.Value, tag.Prefix.Source, err = reader.ReadWhile(unicode.IsSpace)
 	if err != nil {

@@ -28,7 +28,8 @@ func Test_readFile(t *testing.T) {
 			defer file.Close()
 
 			// call readEntry
-			gotFile, err := readFile(utils.NewRuneReaderFromReader(file))
+			gotFile := &BibFile{}
+			err = gotFile.readFile(utils.NewRuneReaderFromReader(file))
 
 			// read the assets
 			var wantFile BibFile
@@ -39,8 +40,8 @@ func Test_readFile(t *testing.T) {
 				return
 			}
 
-			if !reflect.DeepEqual(gotFile, wantFile) {
-				t.Errorf("BibTag.readFile() = %v, want %v", gotFile, wantFile)
+			if !reflect.DeepEqual(gotFile, &wantFile) {
+				t.Errorf("BibTag.readFile() = %v, want %v", gotFile, &wantFile)
 			}
 		})
 	}
@@ -55,8 +56,9 @@ func Benchmark_ReadFile_Kwarc(b *testing.B) {
 }
 
 func benchmarkReadFile(content string, b *testing.B) {
+	file := &BibFile{}
 	for n := 0; n < b.N; n++ {
-		readFile(utils.NewRuneReaderFromString(content))
+		file.readFile(utils.NewRuneReaderFromString(content))
 	}
 }
 

@@ -8,21 +8,22 @@ import (
 
 // BibFile represents an entire BiBFile
 type BibFile struct {
-	Entries []BibEntry `json:"entries"` // The entries of this BibFile
+	Entries []*BibEntry `json:"entries"` // The entries of this BibFile
 
 	Source utils.ReaderRange `json:"source"` // source range that contains this BibFile
 }
 
-// readFile reads a BibFile
-func readFile(reader *utils.RuneReader) (file BibFile, err error) {
+// readFile reads a BibFile from reader
+func (file *BibFile) readFile(reader *utils.RuneReader) (err error) {
 	// store the original position
 	file.Source.Start = reader.Position()
 	file.Source.End = file.Source.Start
 
 	// keep reading entries
-	var entry BibEntry
+
 	for true {
-		entry, err = readEntry(reader)
+		entry := &BibEntry{}
+		err = entry.readEntry(reader)
 		if err == io.EOF { // bail out if there are none left
 			err = nil
 			break

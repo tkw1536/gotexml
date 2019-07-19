@@ -34,15 +34,16 @@ func Test_readTag(t *testing.T) {
 			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibtag_read", tt.asset+".json"), &wantTag)
 
 			// call readTag
-			gotTag, err := readTag(utils.NewRuneReaderFromString(tt.input + ", "))
+			gotTag := &BibTag{}
+			err := gotTag.readTag(utils.NewRuneReaderFromString(tt.input + ", "))
 
 			if (err != nil) != false {
 				t.Errorf("BibTag.readTag() error = %v, wantErr %v", err, false)
 				return
 			}
 
-			if !reflect.DeepEqual(gotTag, wantTag) {
-				t.Errorf("BibTag.readTag() = %v, want %v", gotTag, wantTag)
+			if !reflect.DeepEqual(gotTag, &wantTag) {
+				t.Errorf("BibTag.readTag() = %v, want %v", gotTag, &wantTag)
 			}
 		})
 	}
@@ -86,7 +87,8 @@ func Benchmark_ReadTag_KeyValueComplex(b *testing.B) {
 
 func benchmarkReadTag(content string, b *testing.B) {
 	p := content + ", "
+	tag := &BibTag{}
 	for n := 0; n < b.N; n++ {
-		readTag(utils.NewRuneReaderFromString(p))
+		tag.readTag(utils.NewRuneReaderFromString(p))
 	}
 }

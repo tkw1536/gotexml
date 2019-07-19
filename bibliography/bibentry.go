@@ -14,16 +14,16 @@ type BibEntry struct {
 	Kind       BibString `json:"kind"`       // the type of this BibEntry, a literal succeeding '@'
 	KindSuffix BibString `json:"kindSuffix"` // spaces behind the kind
 
-	Tags []BibTag `json:"tags"` // tags contained in this BibEntry
+	Tags []*BibTag `json:"tags"` // tags contained in this BibEntry
 
 	Source utils.ReaderRange `json:"source"` // source of this bibtag
 }
 
-// readEntry reads a BibTag entry from reader
+// readEntry reads a BibEntry from reader
 // Tags end with '}' as a terminating character.
 // when err is io.EOF, no beginning tag was found and only Prefix is populated
 // else when err is non-nil, it is an instance of utils.ReaderError
-func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
+func (entry *BibEntry) readEntry(reader *utils.RuneReader) (err error) {
 	// skip ahead until we have an '@' preceeded by a space or the beginning of the string
 	hasPrevSpace := true
 	entry.Prefix.Value, entry.Prefix.Source, err = reader.ReadWhile(func(r rune) bool {
@@ -80,10 +80,10 @@ func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 
 	// continously read tags from this entry
 	// until we have an io.EOF error reported
-	var t BibTag
-	for t.Suffix.Value != "}" {
+	for true {
 		// read the next tag
-		t, err = readTag(reader)
+		t := &BibTag{}
+		err = t.readTag(reader)
 		if err != nil {
 			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read entry")
 			return
@@ -91,6 +91,11 @@ func readEntry(reader *utils.RuneReader) (entry BibEntry, err error) {
 
 		// append the tag to the known list of tags
 		entry.Tags = append(entry.Tags, t)
+
+		// if the entry ended
+		if t.Suffix.Value == "}" {
+			break
+		}
 	}
 
 	// the last source entry
