@@ -1,6 +1,7 @@
 package bibliography
 
 import (
+	"bytes"
 	"path"
 	"reflect"
 	"testing"
@@ -80,13 +81,14 @@ func TestBibString_readQuote(t *testing.T) {
 			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_quote", tt.asset+".json"), &wantQuote)
 
 			// call readQuote
-			gotQuote, err := readQuote(utils.NewRuneReaderFromString(tt.input + " , "))
+			gotQuote := &BibString{}
+			err := gotQuote.readQuote(utils.NewRuneReaderFromString(tt.input + " , "))
 			if (err != nil) != false {
 				t.Errorf("BibString.readQuote() error = %v, wantErr %v", err, false)
 				return
 			}
-			if !reflect.DeepEqual(gotQuote, wantQuote) {
-				t.Errorf("BibString.readQuote() = %v, want %v", gotQuote, wantQuote)
+			if !reflect.DeepEqual(gotQuote, &wantQuote) {
+				t.Errorf("BibString.readQuote() = %v, want %v", gotQuote, &wantQuote)
 			}
 		})
 	}
@@ -107,8 +109,9 @@ func Benchmark_ReadQuote_WithSpaces(b *testing.B) {
 
 func benchmarkReadQuote(content string, b *testing.B) {
 	p := content + " , "
+	bs := &BibString{}
 	for n := 0; n < b.N; n++ {
-		readQuote(utils.NewRuneReaderFromString(p))
+		bs.readQuote(utils.NewRuneReaderFromString(p))
 	}
 }
 
@@ -132,13 +135,14 @@ func TestBibFile_readBrace(t *testing.T) {
 			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_brace", tt.asset+".json"), &wantBrace)
 
 			// call readBrace
-			gotBrace, err := readBrace(utils.NewRuneReaderFromString(tt.input))
+			gotBrace := &BibString{}
+			err := gotBrace.readBrace(utils.NewRuneReaderFromString(tt.input))
 			if (err != nil) != false {
 				t.Errorf("BibString.readBrace() error = %v, wantErr %v", err, false)
 				return
 			}
-			if !reflect.DeepEqual(gotBrace, wantBrace) {
-				t.Errorf("BibString.readBrace() = %v, want %v", gotBrace, wantBrace)
+			if !reflect.DeepEqual(gotBrace, &wantBrace) {
+				t.Errorf("BibString.readBrace() = %v, want %v", gotBrace, &wantBrace)
 			}
 		})
 	}
@@ -165,8 +169,9 @@ func Benchmark_ReadBrace_CloseSlashes(b *testing.B) {
 }
 
 func benchmarkReadBrace(content string, b *testing.B) {
+	bs := &BibString{}
 	for n := 0; n < b.N; n++ {
-		readBrace(utils.NewRuneReaderFromString(content))
+		bs.readBrace(utils.NewRuneReaderFromString(content))
 	}
 }
 
@@ -192,16 +197,17 @@ func TestBibFile_readLiteral(t *testing.T) {
 			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_literal", tt.asset+"_space.json"), &wantSpace)
 
 			// call readLiteral
-			gotLit, gotSpace, err := readLiteral(utils.NewRuneReaderFromString(tt.input + "},"))
+			gotLit := &BibString{}
+			gotSpace, err := gotLit.readLiteral(utils.NewRuneReaderFromString(tt.input + "},"))
 			if (err != nil) != false {
 				t.Errorf("BibString.readLiteral() error = %v, wantErr %v", err, false)
 				return
 			}
-			if !reflect.DeepEqual(gotLit, wantLit) {
-				t.Errorf("BibString.readLiteral() gotLit = %v, wantLit %v", gotLit, wantLit)
+			if !reflect.DeepEqual(gotLit, &wantLit) {
+				t.Errorf("BibString.readLiteral() gotLit = %v, wantLit %v", gotLit, &wantLit)
 			}
-			if !reflect.DeepEqual(gotSpace, wantSpace) {
-				t.Errorf("BibString.readLiteral() gotSpace = %v, wantSpace %v", gotSpace, wantSpace)
+			if !reflect.DeepEqual(gotSpace, &wantSpace) {
+				t.Errorf("BibString.readLiteral() gotSpace = %v, wantSpace %v", gotSpace, &wantSpace)
 			}
 		})
 	}
@@ -228,7 +234,57 @@ func Benchmark_ReadLiteral_SurroundingSpace(b *testing.B) {
 
 func benchmarkReadLiteral(content string, b *testing.B) {
 	p := content + "},"
+	bs := &BibString{}
 	for n := 0; n < b.N; n++ {
-		readLiteral(utils.NewRuneReaderFromString(p))
+		bs.readLiteral(utils.NewRuneReaderFromString(p))
+	}
+}
+
+func TestBibString_Write(t *testing.T) {
+	type fields struct {
+		Kind   BibStringKind
+		Value  string
+		Source utils.ReaderRange
+	}
+	tests := []struct {
+		name       string
+		wantString string
+		asset      string
+	}{
+		// Quote
+		{"empty quotes", `""`, path.Join("bibstring_quote", "0001_empty")},
+		{"simple quote", `"hello"`, path.Join("bibstring_quote", "0002_simple_quote")},
+		{"with { s", `"{\"}"`, path.Join("bibstring_quote", "0003_with_curly")},
+		{"quote with spaces", `"hello world"`, path.Join("bibstring_quote", "0004_with_spaces")},
+		// Brace
+		{"empty braces", `{}`, path.Join("bibstring_brace", "0001_empty")},
+		{"simple braces", `{hello}`, path.Join("bibstring_brace", "0002_simple")},
+		{"nested braces", `{hello{world}}`, path.Join("bibstring_brace", "0003_nested")},
+		{"brace with open \\", `{hello \{world}}`, path.Join("bibstring_brace", "0004_open_slashes")},
+		{"brace with close \\", `{hello world\}`, path.Join("bibstring_brace", "0005_close_slashes")},
+		// Literal
+		{"empty", ``, path.Join("bibstring_literal", "0001_empty_lit")},
+		{"one character", `a`, path.Join("bibstring_literal", "0002_one_character_lit")},
+		{"space", `hello world`, path.Join("bibstring_literal", "0003_space_lit")},
+		{"with an @ sign", `hello@world`, path.Join("bibstring_literal", "0004_with_at_sign_lit")},
+		{"with an \" sign", `hello"world`, path.Join("bibstring_literal", "0005_with_quote_sign_lit")},
+		{"surrounding space", `hello  world`, path.Join("bibstring_literal", "0006_surrounding_space_lit")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// read the literal
+			bs := &BibString{}
+			utils.UnmarshalFileOrPanic(path.Join("testdata", tt.asset+".json"), &bs)
+
+			// check if write into a buffer suceeds
+			writer := &bytes.Buffer{}
+			if err := bs.Write(writer); (err != nil) != false {
+				t.Errorf("BibString.Write() error = %v, wantErr %v", err, false)
+				return
+			}
+			if gotWriter := writer.String(); gotWriter != tt.wantString {
+				t.Errorf("BibString.Write() = %v, want %v", gotWriter, tt.wantString)
+			}
+		})
 	}
 }

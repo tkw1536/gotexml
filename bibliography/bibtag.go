@@ -10,17 +10,17 @@ import (
 // BibTag represents a single (key, value) pairs within a BibTeX entry
 // note that value itself may consist of an arbitrary number of BibStrings, being 0 for key-value pairs and a range for concatinated strings
 type BibTag struct {
-	Prefix   BibString       `json:"prefix"`   // spaces preceeding this BibTag
-	Elements []BibTagElement `json:"elements"` // elements of this BibTag
-	Suffix   BibString       `json:"suffix"`   // the suffix (i.e. terminating character) of this string
+	Prefix   BibString        `json:"prefix"`   // spaces preceeding this BibTag
+	Elements []*BibTagElement `json:"elements"` // elements of this BibTag
+	Suffix   BibString        `json:"suffix"`   // the suffix (i.e. terminating character) of this string
 
 	Source utils.ReaderRange `json:"source"` // source range that contains this BibTag
 }
 
 // BibTagElement represents one element of this BibTag
 type BibTagElement struct {
-	Value  BibString      `json:"value"`          // concrete value of this element
-	Suffix BibString      `json:"suffix"`         // space + concatination value of this element
+	Value  *BibString     `json:"value"`          // concrete value of this element
+	Suffix *BibString     `json:"suffix"`         // space + concatination value of this element
 	Role   TagElementRole `json:"role,omitempty"` // the role of this BibTagElement
 }
 
@@ -48,7 +48,6 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 	// state we will constantly update
 	var r rune
 	var s string
-	var temp, space BibString
 	var pos utils.ReaderPosition
 	var loc utils.ReaderRange
 
@@ -72,6 +71,8 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 	mayConcatNext := false
 	mayEqualNext := false
 
+	var last *BibTagElement
+
 	// iteratively read characters
 	for r != ',' && r != '}' {
 		switch r {
@@ -88,11 +89,11 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 
 			// mark the previous element as as a key
 			hadEqualSign = true
-			tag.Elements[0].Role = KeyElementRole
+			last.Role = KeyElementRole
 
 			// add an '=' to the last suffix
-			tag.Elements[len(tag.Elements)-1].Suffix.Value += string(r)
-			tag.Elements[len(tag.Elements)-1].Suffix.Source.End = pos
+			last.Suffix.Value += string(r)
+			last.Suffix.Source.End = pos
 			shouldAppendSuffix = true
 
 			// after a string, we may no longer have '='s
@@ -111,11 +112,11 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 			}
 
 			// mark the previous element as being a term
-			tag.Elements[len(tag.Elements)-1].Role = TermElementRole
+			last.Role = TermElementRole
 
 			// add an '#' to the last suffix
-			tag.Elements[len(tag.Elements)-1].Suffix.Value += string(r)
-			tag.Elements[len(tag.Elements)-1].Suffix.Source.End = pos
+			last.Suffix.Value += string(r)
+			last.Suffix.Source.End = pos
 			shouldAppendSuffix = true
 
 			// after a concat, we may only add another string
@@ -128,14 +129,18 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 				return
 			}
 
+			// append a new element
+			last = &BibTagElement{
+				Value:  &BibString{},
+				Suffix: &BibString{},
+			}
+			tag.Elements = append(tag.Elements, last)
+
 			// read the quote and append it to the content
-			temp, err = readQuote(reader)
+			err = last.Value.readQuote(reader)
 			if err != nil {
 				return
 			}
-			tag.Elements = append(tag.Elements, BibTagElement{
-				Value: temp,
-			})
 			shouldAppendSuffix = false
 
 			// after a quote, either another string is concatinated
@@ -150,14 +155,18 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 				return
 			}
 
+			// append a new element
+			last = &BibTagElement{
+				Value:  &BibString{},
+				Suffix: &BibString{},
+			}
+			tag.Elements = append(tag.Elements, last)
+
 			// read the brace and append it to the content
-			temp, err = readBrace(reader)
+			err = last.Value.readBrace(reader)
 			if err != nil {
 				return
 			}
-			tag.Elements = append(tag.Elements, BibTagElement{
-				Value: temp,
-			})
 			shouldAppendSuffix = false
 
 			// after a brace, we may have an equal sign unless we already had one before
@@ -170,16 +179,17 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 				return
 			}
 
+			// append a new element
+			last = &BibTagElement{
+				Value: &BibString{},
+			}
+			tag.Elements = append(tag.Elements, last)
+
 			// read the literal
-			temp, space, err = readLiteral(reader)
+			last.Suffix, err = last.Value.readLiteral(reader)
 			if err != nil {
 				return
 			}
-			tag.Elements = append(tag.Elements, BibTagElement{
-				Value:  temp,
-				Suffix: space,
-			})
-
 			shouldAppendSuffix = true
 
 			// after a brace, we may have an equal sign unless we already had one before
@@ -196,14 +206,12 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 		}
 
 		// append or use s as the space
-		l := &tag.Elements[len(tag.Elements)-1].Suffix
 		if shouldAppendSuffix {
-			l.AppendRaw(s, loc)
+			last.Suffix.AppendRaw(s, loc)
 		} else {
-			l.Value = s
-			l.Source = loc
+			last.Suffix.Value = s
+			last.Suffix.Source = loc
 		}
-		tag.Elements[len(tag.Elements)-1].Suffix = *l
 
 		// peek the next char
 		r, pos, err = reader.Peek()

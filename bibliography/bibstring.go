@@ -1,6 +1,7 @@
 package bibliography
 
 import (
+	"io"
 	"strings"
 	"unicode"
 
@@ -49,7 +50,7 @@ func (bs *BibString) AppendRaw(value string, loc utils.ReaderRange) {
 // readLiteral reads a BibString of kind BibStringLiteral from the input
 // Skips and returns spaces after the BibString.
 // If not nil, err is an instance of utils.ReaderError
-func readLiteral(reader *utils.RuneReader) (lit BibString, space BibString, rr error) {
+func (bs *BibString) readLiteral(reader *utils.RuneReader) (space *BibString, rr error) {
 	// read the next character or bail out when an error or EOF occurs
 	char, pos, err := reader.Read()
 	if err != nil {
@@ -62,15 +63,15 @@ func readLiteral(reader *utils.RuneReader) (lit BibString, space BibString, rr e
 	}
 
 	// record start and end
-	lit.Source.Start = pos
-	lit.Source.End = pos
+	bs.Source.Start = pos
+	bs.Source.End = pos
 
 	// iterate over sequential non-space sequences
 	var cache string
 	var source, prevSource utils.ReaderRange
 	for isNotSpecialLiteral(char) {
 		// add spaces from the previous iteration
-		lit.Value += cache + string(char)
+		bs.Value += cache + string(char)
 
 		// add the next non-space sequence
 		cache, prevSource, err = reader.ReadWhile(isNotSpecialSpaceLiteral)
@@ -78,7 +79,7 @@ func readLiteral(reader *utils.RuneReader) (lit BibString, space BibString, rr e
 			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read literal")
 			return
 		}
-		lit.Value += cache
+		bs.Value += cache
 
 		// if we did not add any more characters
 		// the range for the previous read character should be used
@@ -110,21 +111,24 @@ func readLiteral(reader *utils.RuneReader) (lit BibString, space BibString, rr e
 	reader.Unread(char, pos)
 
 	// store remaining data from the literal
-	lit.Kind = BibStringLiteral
-	lit.Source.End = prevSource.End
+	bs.Kind = BibStringLiteral
+	bs.Source.End = prevSource.End
 
-	// store remaining data from the spacing
-	space.Kind = BibStringOther
-	space.Value = cache
-	space.Source = source
+	// store remaining data for the spacing
+	// note that this will always allocate a new element
+	space = &BibString{
+		Kind:   BibStringOther,
+		Value:  cache,
+		Source: source,
+	}
 
 	return
 }
 
-// readBrace reads a BibString of kind BibStringBracket from the input
+// readBrace reads a BibString of kind BibStringBracket from reader
 // Must start with "{" and end with "}". Does not skip any spaces before or after.
 // If not nil, err is an instance of utils.ReaderError
-func readBrace(reader *utils.RuneReader) (brace BibString, err error) {
+func (bs *BibString) readBrace(reader *utils.RuneReader) (err error) {
 	char, pos, err := reader.Read()
 	if err != nil {
 		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read braces")
@@ -140,7 +144,7 @@ func readBrace(reader *utils.RuneReader) (brace BibString, err error) {
 	}
 
 	// record starting position
-	brace.Source.Start = pos
+	bs.Source.Start = pos
 
 	// iteratively read chars, keeping track of the current level
 	var builder strings.Builder
@@ -175,9 +179,9 @@ func readBrace(reader *utils.RuneReader) (brace BibString, err error) {
 
 	}
 
-	brace.Kind = BibStringBracket
-	brace.Value = builder.String()
-	brace.Source.End = pos
+	bs.Kind = BibStringBracket
+	bs.Value = builder.String()
+	bs.Source.End = pos
 
 	return
 }
@@ -185,7 +189,7 @@ func readBrace(reader *utils.RuneReader) (brace BibString, err error) {
 // readQuote reads a BibString of kind BibStringQuote from the input
 // Must start and end with "s. Does not skip any spaces.
 // If not nil, err is an instance of utils.ReaderError
-func readQuote(reader *utils.RuneReader) (quote BibString, err error) {
+func (bs *BibString) readQuote(reader *utils.RuneReader) (err error) {
 	char, pos, err := reader.Read()
 	if err != nil {
 		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read quote")
@@ -201,7 +205,7 @@ func readQuote(reader *utils.RuneReader) (quote BibString, err error) {
 	}
 
 	// record starting position
-	quote.Source.Start = pos
+	bs.Source.Start = pos
 
 	// iteratively read chars, keeping track of the current level
 	var builder strings.Builder
@@ -236,11 +240,26 @@ func readQuote(reader *utils.RuneReader) (quote BibString, err error) {
 		builder.WriteRune(char)
 	}
 
-	quote.Kind = BibStringQuote
-	quote.Value = builder.String()
-	quote.Source.End = pos
+	bs.Kind = BibStringQuote
+	bs.Value = builder.String()
+	bs.Source.End = pos
 
 	return
+}
+
+// Write writes this BibString into the writer
+func (bs *BibString) Write(writer io.Writer) (err error) {
+	var data string
+	switch bs.Kind {
+	case BibStringQuote:
+		data = "\"" + bs.Value + "\""
+	case BibStringBracket:
+		data = "{" + bs.Value + "}"
+	default:
+		data = bs.Value
+	}
+	_, err = writer.Write([]byte(data))
+	return err
 }
 
 // isNotSpecialLiteral checks that the rune is not a specially treated literal

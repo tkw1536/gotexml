@@ -11,8 +11,8 @@ import (
 type BibEntry struct {
 	Prefix BibString `json:"prefix"` // Spaces before the BibString
 
-	Kind       BibString `json:"kind"`       // the type of this BibEntry, a literal succeeding '@'
-	KindSuffix BibString `json:"kindSuffix"` // spaces behind the kind
+	Kind       *BibString `json:"kind"`       // the type of this BibEntry, a literal succeeding '@'
+	KindSuffix *BibString `json:"kindSuffix"` // spaces behind the kind
 
 	Tags []*BibTag `json:"tags"` // tags contained in this BibEntry
 
@@ -57,7 +57,8 @@ func (entry *BibEntry) readEntry(reader *utils.RuneReader) (err error) {
 	entry.Source.Start = pos
 
 	// read the literal and the appropriate suffix
-	entry.Kind, entry.KindSuffix, err = readLiteral(reader)
+	entry.Kind = &BibString{}
+	entry.KindSuffix, err = entry.Kind.readLiteral(reader)
 	if err != nil {
 		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read entry")
 		return
