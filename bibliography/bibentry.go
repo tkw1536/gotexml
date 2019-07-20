@@ -105,3 +105,29 @@ func (entry *BibEntry) readEntry(reader *utils.RuneReader) (err error) {
 	// and return the element
 	return
 }
+
+// Write writes this BibEntry into a writer
+func (entry *BibEntry) Write(writer io.Writer) error {
+	if err := entry.Prefix.Write(writer); err != nil {
+		return err
+	}
+	if _, err := writer.Write([]byte("@")); err != nil {
+		return err
+	}
+	if err := entry.Kind.Write(writer); err != nil {
+		return err
+	}
+	if err := entry.KindSuffix.Write(writer); err != nil {
+		return err
+	}
+	if _, err := writer.Write([]byte("{")); err != nil {
+		return err
+	}
+	for _, tag := range entry.Tags {
+		if err := tag.Write(writer); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

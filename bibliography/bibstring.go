@@ -247,7 +247,7 @@ func (bs *BibString) readQuote(reader *utils.RuneReader) (err error) {
 	return
 }
 
-// Write writes this BibString into the writer
+// Write writes this BibString into a writer
 func (bs *BibString) Write(writer io.Writer) (err error) {
 	var data string
 	switch bs.Kind {

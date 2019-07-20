@@ -241,11 +241,6 @@ func benchmarkReadLiteral(content string, b *testing.B) {
 }
 
 func TestBibString_Write(t *testing.T) {
-	type fields struct {
-		Kind   BibStringKind
-		Value  string
-		Source utils.ReaderRange
-	}
 	tests := []struct {
 		name       string
 		wantString string

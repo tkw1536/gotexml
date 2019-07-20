@@ -2,6 +2,7 @@ package bibliography
 
 // TODO: Test me
 import (
+	"io"
 	"unicode"
 
 	"github.com/tkw1536/gotexml/utils"
@@ -236,4 +237,23 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 
 	// and return
 	return
+}
+
+// Write writes this BibTag into a writer
+func (tag *BibTag) Write(writer io.Writer) error {
+	if err := tag.Prefix.Write(writer); err != nil {
+		return err
+	}
+	for _, e := range tag.Elements {
+		if err := e.Value.Write(writer); err != nil {
+			return err
+		}
+		if err := e.Suffix.Write(writer); err != nil {
+			return err
+		}
+	}
+	if err := tag.Suffix.Write(writer); err != nil {
+		return err
+	}
+	return nil
 }

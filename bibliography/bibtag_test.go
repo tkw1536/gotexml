@@ -1,6 +1,7 @@
 package bibliography
 
 import (
+	"bytes"
 	"path"
 	"reflect"
 	"testing"
@@ -90,5 +91,42 @@ func benchmarkReadTag(content string, b *testing.B) {
 	tag := &BibTag{}
 	for n := 0; n < b.N; n++ {
 		tag.readTag(utils.NewRuneReaderFromString(p))
+	}
+}
+
+func TestBibTag_Write(t *testing.T) {
+	tests := []struct {
+		name       string
+		wantString string
+		asset      string
+	}{
+		// value only
+		{"empty tag", `,`, "0001_empty"},
+		{"endingbrace", `}`, "0010_name_compact_value"},
+		{"literal value", `value,`, "0002_literal"},
+		{"quoted value", `"value",`, "0003_quoted"},
+		{"braced value", `{value},`, "0004_braced"},
+		{"concated literals", `value1 # value2,`, "0005_concated"},
+		{"concated quote and literal", `"value1" # value2,`, "0006_concat_quote_literal"},
+		// key = value
+		{"simple name", `name = value,`, "0007_key_value"},
+		{"simple name (compact)", `name=value,`, "0008_simple_name_compact"},
+		{"name + compact value", `name=a#"b",`, "0009_name_compact_value"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// read the tag
+			var tag BibTag
+			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibtag_read", tt.asset+".json"), &tag)
+			// write the buffer
+			writer := &bytes.Buffer{}
+			if err := tag.Write(writer); (err != nil) != false {
+				t.Errorf("BibTag.Write() error = %v, wantErr %v", err, false)
+				return
+			}
+			if gotWriter := writer.String(); gotWriter != tt.wantString {
+				t.Errorf("BibTag.Write() = %v, want %v", gotWriter, tt.wantString)
+			}
+		})
 	}
 }

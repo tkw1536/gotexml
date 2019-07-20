@@ -40,3 +40,13 @@ func (file *BibFile) readFile(reader *utils.RuneReader) (err error) {
 	}
 	return
 }
+
+// Write writes this BibFile into a writer
+func (file *BibFile) Write(writer io.Writer) error {
+	for _, e := range file.Entries {
+		if err := e.Write(writer); err != nil {
+			return err
+		}
+	}
+	return nil
+}
