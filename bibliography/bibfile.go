@@ -9,8 +9,16 @@ import (
 // BibFile represents an entire BiBFile
 type BibFile struct {
 	Entries []*BibEntry `json:"entries"` // The entries of this BibFile
+	Suffix  BibString   `json:"suffix"`  // the suffix of this file
 
 	Source utils.ReaderRange `json:"source"` // source range that contains this BibFile
+}
+
+// NewBibFileFromReader makes a new BibFile from the given reader
+func NewBibFileFromReader(reader *utils.RuneReader) (file *BibFile, err error) {
+	file = &BibFile{}
+	err = file.readFile(reader)
+	return
 }
 
 // readFile reads a BibFile from reader
@@ -25,6 +33,7 @@ func (file *BibFile) readFile(reader *utils.RuneReader) (err error) {
 		entry := &BibEntry{}
 		err = entry.readEntry(reader)
 		if err == io.EOF { // bail out if there are none left
+			file.Suffix = entry.Prefix
 			err = nil
 			break
 		}
@@ -48,5 +57,5 @@ func (file *BibFile) Write(writer io.Writer) error {
 			return err
 		}
 	}
-	return nil
+	return file.Suffix.Write(writer)
 }

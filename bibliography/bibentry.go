@@ -129,5 +129,12 @@ func (entry *BibEntry) Write(writer io.Writer) error {
 		}
 	}
 
+	// if we have no tags, we need to manually write the closing '}'
+	if len(entry.Tags) == 0 {
+		if _, err := writer.Write([]byte("}")); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

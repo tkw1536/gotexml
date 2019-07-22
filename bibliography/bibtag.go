@@ -30,10 +30,15 @@ type TagElementRole string
 
 //kinds of roles that can occur
 const (
-	TagElementNormal TagElementRole = ""     // no special role
-	KeyElementRole   TagElementRole = "key"  // the name of this key
-	TermElementRole  TagElementRole = "term" // a term which will be appended
+	NormalElementRole TagElementRole = ""     // no special role
+	KeyElementRole    TagElementRole = "key"  // the name of this key
+	TermElementRole   TagElementRole = "term" // a term which will be appended
 )
+
+// Empty checks if a tag is empty
+func (tag *BibTag) Empty() bool {
+	return len(tag.Elements) == 0
+}
 
 // readTag reads a (potentially empty) BibTag from reader.
 // Tags end with a character ',' or '}'. These are contained in suffix.
