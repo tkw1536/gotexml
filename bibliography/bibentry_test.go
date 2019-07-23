@@ -37,7 +37,7 @@ func Test_readEntry(t *testing.T) {
 			err = gotEntry.readEntry(utils.NewRuneReaderFromReader(file))
 
 			// read the assets
-			var wantEntry BibEntry
+			var wantEntry *BibEntry
 			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibentry_read", tt.asset+".json"), &wantEntry)
 
 			// if we want eof, only test for EOF
@@ -54,8 +54,8 @@ func Test_readEntry(t *testing.T) {
 				return
 			}
 
-			if !reflect.DeepEqual(gotEntry, &wantEntry) {
-				t.Errorf("BibTag.readEntry() = %v, want %v", gotEntry, &wantEntry)
+			if !reflect.DeepEqual(gotEntry, wantEntry) {
+				t.Errorf("BibTag.readEntry() = %v, want %v", gotEntry, wantEntry)
 			}
 		})
 	}

@@ -1,0 +1,31 @@
+{
+    "value": {
+        "kind": "LITERAL",
+        "value": "name",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 0
+            },
+            "end": {
+                "line": 0,
+                "column": 3
+            }
+        }
+    },
+    "suffix": {
+        "kind": "",
+        "value": "=",
+        "source": {
+            "start": {
+                "line": 0,
+                "column": 4
+            },
+            "end": {
+                "line": 0,
+                "column": 4
+            }
+        }
+    },
+    "role": "key"
+}

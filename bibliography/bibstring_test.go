@@ -77,7 +77,7 @@ func TestBibString_readQuote(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// read the asset
-			var wantQuote BibString
+			var wantQuote *BibString
 			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_quote", tt.asset+".json"), &wantQuote)
 
 			// call readQuote
@@ -87,8 +87,8 @@ func TestBibString_readQuote(t *testing.T) {
 				t.Errorf("BibString.readQuote() error = %v, wantErr %v", err, false)
 				return
 			}
-			if !reflect.DeepEqual(gotQuote, &wantQuote) {
-				t.Errorf("BibString.readQuote() = %v, want %v", gotQuote, &wantQuote)
+			if !reflect.DeepEqual(gotQuote, wantQuote) {
+				t.Errorf("BibString.readQuote() = %v, want %v", gotQuote, wantQuote)
 			}
 		})
 	}
@@ -131,7 +131,7 @@ func TestBibFile_readBrace(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			// read the asset
-			var wantBrace BibString
+			var wantBrace *BibString
 			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_brace", tt.asset+".json"), &wantBrace)
 
 			// call readBrace
@@ -141,8 +141,8 @@ func TestBibFile_readBrace(t *testing.T) {
 				t.Errorf("BibString.readBrace() error = %v, wantErr %v", err, false)
 				return
 			}
-			if !reflect.DeepEqual(gotBrace, &wantBrace) {
-				t.Errorf("BibString.readBrace() = %v, want %v", gotBrace, &wantBrace)
+			if !reflect.DeepEqual(gotBrace, wantBrace) {
+				t.Errorf("BibString.readBrace() = %v, want %v", gotBrace, wantBrace)
 			}
 		})
 	}
@@ -192,7 +192,7 @@ func TestBibFile_readLiteral(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			// read test assets
-			var wantLit, wantSpace BibString
+			var wantLit, wantSpace *BibString
 			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_literal", tt.asset+"_lit.json"), &wantLit)
 			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibstring_literal", tt.asset+"_space.json"), &wantSpace)
 
@@ -203,11 +203,11 @@ func TestBibFile_readLiteral(t *testing.T) {
 				t.Errorf("BibString.readLiteral() error = %v, wantErr %v", err, false)
 				return
 			}
-			if !reflect.DeepEqual(gotLit, &wantLit) {
-				t.Errorf("BibString.readLiteral() gotLit = %v, wantLit %v", gotLit, &wantLit)
+			if !reflect.DeepEqual(gotLit, wantLit) {
+				t.Errorf("BibString.readLiteral() gotLit = %v, wantLit %v", gotLit, wantLit)
 			}
-			if !reflect.DeepEqual(gotSpace, &wantSpace) {
-				t.Errorf("BibString.readLiteral() gotSpace = %v, wantSpace %v", gotSpace, &wantSpace)
+			if !reflect.DeepEqual(gotSpace, wantSpace) {
+				t.Errorf("BibString.readLiteral() gotSpace = %v, wantSpace %v", gotSpace, wantSpace)
 			}
 		})
 	}

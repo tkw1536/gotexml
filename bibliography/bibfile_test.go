@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/tkw1536/gotexml/utils"
@@ -34,7 +33,7 @@ func Test_readFile(t *testing.T) {
 			err = gotFile.readFile(utils.NewRuneReaderFromReader(file))
 
 			// read the assets
-			var wantFile BibFile
+			var wantFile *BibFile
 			utils.CompressUnmarshalFileOrPanic(path.Join("testdata", "bibfile_read", tt.asset+".json.gz"), &wantFile)
 
 			if (err != nil) != false {
@@ -42,8 +41,8 @@ func Test_readFile(t *testing.T) {
 				return
 			}
 
-			if !reflect.DeepEqual(gotFile, &wantFile) {
-				t.Errorf("BibTag.readFile() = %v, want %v", gotFile, &wantFile)
+			if !reflect.DeepEqual(gotFile, wantFile) {
+				t.Errorf("BibTag.readFile() = %v, want %v", gotFile, wantFile)
 			}
 		})
 	}
@@ -83,7 +82,7 @@ func TestBibFile_Write(t *testing.T) {
 
 			// load the string we want
 			var wantString string
-			wantString = strings.TrimRight(utils.ReadFileOrPanic(path.Join("testdata", "bibfile_read", tt.asset+".bib")), "\n")
+			wantString = utils.ReadFileOrPanic(path.Join("testdata", "bibfile_read", tt.asset+".bib"))
 
 			// write the buffer
 			writer := &bytes.Buffer{}
