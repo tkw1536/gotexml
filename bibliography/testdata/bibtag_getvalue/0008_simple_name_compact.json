@@ -1,0 +1,32 @@
+[
+    {
+        "value": {
+            "kind": "LITERAL",
+            "value": "value",
+            "source": {
+                "start": {
+                    "line": 0,
+                    "column": 5
+                },
+                "end": {
+                    "line": 0,
+                    "column": 9
+                }
+            }
+        },
+        "suffix": {
+            "kind": "",
+            "value": "",
+            "source": {
+                "start": {
+                    "line": 0,
+                    "column": 10
+                },
+                "end": {
+                    "line": 0,
+                    "column": 10
+                }
+            }
+        }
+    }
+]

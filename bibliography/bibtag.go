@@ -35,11 +35,6 @@ const (
 	TermElementRole   TagElementRole = "term" // a term which will be appended
 )
 
-// Empty checks if a tag is empty
-func (tag *BibTag) Empty() bool {
-	return len(tag.Elements) == 0
-}
-
 // readTag reads a (potentially empty) BibTag from reader.
 // Tags end with a character ',' or '}'. These are contained in suffix.
 // when err is no nil, it is an instance of utils.ReaderError.
@@ -261,4 +256,34 @@ func (tag *BibTag) Write(writer io.Writer) error {
 		return err
 	}
 	return nil
+}
+
+// Empty checks if a tag is empty
+func (tag *BibTag) Empty() bool {
+	return len(tag.Elements) == 0
+}
+
+// IsKeyValue checks if this BibTag is of the form 'key = value'
+func (tag *BibTag) IsKeyValue() bool {
+	return len(tag.Elements) >= 1 && tag.Elements[0].Role == KeyElementRole
+}
+
+// GetKey returns the 'key' of this BibTag entry, i.e. the first element in a 'key = value' assignment
+// if there is no key, returns nil
+func (tag *BibTag) GetKey() *BibTagElement {
+	if !tag.IsKeyValue() {
+		return nil
+	}
+
+	return tag.Elements[0]
+}
+
+// GetValue returns the value elements of this key, i.e. everything after the first element in a 'key = value' assignment
+// if the BibEntry is not of the form key == value, returns 0
+func (tag *BibTag) GetValue() []*BibTagElement {
+	if !tag.IsKeyValue() {
+		return nil
+	}
+
+	return tag.Elements[1:]
 }

@@ -1,0 +1,63 @@
+[
+    {
+        "value": {
+            "kind": "LITERAL",
+            "value": "a",
+            "source": {
+                "start": {
+                    "line": 0,
+                    "column": 5
+                },
+                "end": {
+                    "line": 0,
+                    "column": 5
+                }
+            }
+        },
+        "suffix": {
+            "kind": "",
+            "value": "#",
+            "source": {
+                "start": {
+                    "line": 0,
+                    "column": 6
+                },
+                "end": {
+                    "line": 0,
+                    "column": 6
+                }
+            }
+        },
+        "role": "term"
+    },
+    {
+        "value": {
+            "kind": "QUOTE",
+            "value": "b",
+            "source": {
+                "start": {
+                    "line": 0,
+                    "column": 7
+                },
+                "end": {
+                    "line": 0,
+                    "column": 9
+                }
+            }
+        },
+        "suffix": {
+            "kind": "",
+            "value": "",
+            "source": {
+                "start": {
+                    "line": 0,
+                    "column": 10
+                },
+                "end": {
+                    "line": 0,
+                    "column": 10
+                }
+            }
+        }
+    }
+]
