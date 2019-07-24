@@ -14,14 +14,14 @@ type BibEntry struct {
 	Kind       *BibString `json:"kind"`       // the type of this BibEntry, a literal succeeding '@'
 	KindSuffix *BibString `json:"kindSuffix"` // spaces behind the kind
 
-	Tags []*BibTag `json:"tags"` // tags contained in this BibEntry
+	Fields []*BibField `json:"fields"` // fields contained in this BibEntry
 
-	Source utils.ReaderRange `json:"source"` // source of this bibtag
+	Source utils.ReaderRange `json:"source"` // source of this BibField
 }
 
 // readEntry reads a BibEntry from reader
-// Tags end with '}' as a terminating character.
-// when err is io.EOF, no beginning tag was found and only Prefix is populated
+// Entries end with '}' as a terminating character.
+// when err is io.EOF, no beginning entry was found and only Prefix is populated
 // else when err is non-nil, it is an instance of utils.ReaderError
 func (entry *BibEntry) readEntry(reader *utils.RuneReader) (err error) {
 	// skip ahead until we have an '@' preceeded by a space or the beginning of the string
@@ -79,22 +79,22 @@ func (entry *BibEntry) readEntry(reader *utils.RuneReader) (err error) {
 		return
 	}
 
-	// continously read tags from this entry
+	// continously read fields from this entry
 	// until we have an io.EOF error reported
 	for true {
-		// read the next tag
-		t := &BibTag{}
-		err = t.readTag(reader)
+		// read the next field
+		f := &BibField{}
+		err = f.readField(reader)
 		if err != nil {
 			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read entry")
 			return
 		}
 
-		// append the tag to the known list of tags
-		entry.Tags = append(entry.Tags, t)
+		// append the field to the known list of fields
+		entry.Fields = append(entry.Fields, f)
 
 		// if the entry ended
-		if t.Suffix.Value == "}" {
+		if f.Suffix.Value == "}" {
 			break
 		}
 	}
@@ -123,14 +123,14 @@ func (entry *BibEntry) Write(writer io.Writer) error {
 	if _, err := writer.Write([]byte("{")); err != nil {
 		return err
 	}
-	for _, tag := range entry.Tags {
-		if err := tag.Write(writer); err != nil {
+	for _, field := range entry.Fields {
+		if err := field.Write(writer); err != nil {
 			return err
 		}
 	}
 
-	// if we have no tags, we need to manually write the closing '}'
-	if len(entry.Tags) == 0 {
+	// if we have no fields, we need to manually write the closing '}'
+	if len(entry.Fields) == 0 {
 		if _, err := writer.Write([]byte("}")); err != nil {
 			return err
 		}

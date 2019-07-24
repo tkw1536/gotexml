@@ -40,7 +40,7 @@ func (file *BibFile) readFile(reader *utils.RuneReader) (err error) {
 
 		// throw an error
 		if err != nil {
-			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read tag")
+			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read field")
 			return
 		}
 

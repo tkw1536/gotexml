@@ -43,19 +43,19 @@ func Test_readEntry(t *testing.T) {
 			// if we want eof, only test for EOF
 			if tt.wantEOF {
 				if err != io.EOF {
-					t.Errorf("BibTag.readEntry() error = %v, wantErr %v", err, io.EOF)
+					t.Errorf("BibField.readEntry() error = %v, wantErr %v", err, io.EOF)
 					return
 				}
 				return
 			}
 
 			if (err != nil) != false {
-				t.Errorf("BibTag.readEntry() error = %v, wantErr %v", err, false)
+				t.Errorf("BibField.readEntry() error = %v, wantErr %v", err, false)
 				return
 			}
 
 			if !reflect.DeepEqual(gotEntry, wantEntry) {
-				t.Errorf("BibTag.readEntry() = %v, want %v", gotEntry, wantEntry)
+				t.Errorf("BibField.readEntry() = %v, want %v", gotEntry, wantEntry)
 			}
 		})
 	}

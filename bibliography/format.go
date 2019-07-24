@@ -86,7 +86,7 @@ func (format *Format) removeEmptyTags() bool {
 }
 
 // FormatTag formats a Tag using these options
-func (format *Format) FormatTag(tag *BibTag) {
+func (format *Format) FormatTag(tag *BibField) {
 	space := format.tagSpace()
 
 	// Prefix and suffix set by FormatEntry()
@@ -122,20 +122,20 @@ func (format *Format) FormatEntry(entry *BibEntry) {
 
 	// if we want to remove empty tags, remove them
 	if format.removeEmptyTags() {
-		filteredTags := entry.Tags[:0]
-		for _, t := range entry.Tags {
+		filteredTags := entry.Fields[:0]
+		for _, t := range entry.Fields {
 			if !t.Empty() {
 				filteredTags = append(filteredTags, t)
 			}
 		}
-		for i := len(filteredTags); i < len(entry.Tags); i++ {
-			entry.Tags[i] = nil
+		for i := len(filteredTags); i < len(entry.Fields); i++ {
+			entry.Fields[i] = nil
 		}
-		entry.Tags = filteredTags
+		entry.Fields = filteredTags
 	}
 
 	// format the tags
-	for i, t := range entry.Tags {
+	for i, t := range entry.Fields {
 		format.FormatTag(t)
 		if i == 0 {
 			t.Prefix.Value = format.firstTagSeperator()
@@ -146,11 +146,11 @@ func (format *Format) FormatEntry(entry *BibEntry) {
 
 	// we now need to format the last tag in the entry
 	// but this can't be done if there are no tags
-	last := len(entry.Tags) - 1
+	last := len(entry.Fields) - 1
 	if last == -1 {
 		return
 	}
-	lastTag := entry.Tags[last]
+	lastTag := entry.Fields[last]
 
 	// make sure it ends with a '}' (if we filtered)
 	lastTag.Suffix.Value = "}"

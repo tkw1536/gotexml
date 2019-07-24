@@ -8,41 +8,41 @@ import (
 	"github.com/tkw1536/gotexml/utils"
 )
 
-// BibTag represents a single (key, value) pairs within a BibTeX entry
+// BibField represents a single (key, value) pairs within a BibTeX entry
 // note that value itself may consist of an arbitrary number of BibStrings, being 0 for key-value pairs and a range for concatinated strings
-type BibTag struct {
-	Prefix   BibString        `json:"prefix"`   // spaces preceeding this BibTag
-	Elements []*BibTagElement `json:"elements"` // elements of this BibTag
-	Suffix   BibString        `json:"suffix"`   // the suffix (i.e. terminating character) of this string
+type BibField struct {
+	Prefix   BibString          `json:"prefix"`   // spaces preceeding this BibField
+	Elements []*BibFieldElement `json:"elements"` // elements of this BibField
+	Suffix   BibString          `json:"suffix"`   // the suffix (i.e. terminating character) of this string
 
-	Source utils.ReaderRange `json:"source"` // source range that contains this BibTag
+	Source utils.ReaderRange `json:"source"` // source range that contains this BibField
 }
 
-// BibTagElement represents one element of this BibTag
-type BibTagElement struct {
-	Value  *BibString     `json:"value"`          // concrete value of this element
-	Suffix *BibString     `json:"suffix"`         // space + concatination value of this element
-	Role   TagElementRole `json:"role,omitempty"` // the role of this BibTagElement
+// BibFieldElement represents one element of this BibField
+type BibFieldElement struct {
+	Value  *BibString       `json:"value"`          // concrete value of this element
+	Suffix *BibString       `json:"suffix"`         // space + concatination value of this element
+	Role   FieldElementRole `json:"role,omitempty"` // the role of this BibFieldElement
 }
 
-// TagElementRole is the role of a BibTagElement
-type TagElementRole string
+// FieldElementRole is the role of a BibFieldElement
+type FieldElementRole string
 
 //kinds of roles that can occur
 const (
-	NormalElementRole TagElementRole = ""     // no special role
-	KeyElementRole    TagElementRole = "key"  // the name of this key
-	TermElementRole   TagElementRole = "term" // a term which will be appended
+	NormalElementRole FieldElementRole = ""     // no special role
+	KeyElementRole    FieldElementRole = "key"  // the name of this key
+	TermElementRole   FieldElementRole = "term" // a term which will be appended
 )
 
-// readTag reads a (potentially empty) BibTag from reader.
-// Tags end with a character ',' or '}'. These are contained in suffix.
+// readField reads a (potentially empty) BibField from reader.
+// Fields end with a character ',' or '}'. These are contained in suffix.
 // when err is no nil, it is an instance of utils.ReaderError.
-func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
+func (field *BibField) readField(reader *utils.RuneReader) (err error) {
 	// read spaces at the beginning
-	tag.Prefix.Value, tag.Prefix.Source, err = reader.ReadWhile(unicode.IsSpace)
+	field.Prefix.Value, field.Prefix.Source, err = reader.ReadWhile(unicode.IsSpace)
 	if err != nil {
-		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read tag")
+		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read field")
 		return
 	}
 
@@ -55,14 +55,14 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 	// peek the next char
 	r, pos, err = reader.Peek()
 	if err != nil {
-		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read tag")
+		err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read field")
 	}
 	if pos.EOF {
-		err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read tag")
+		err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read field")
 		return
 	}
 
-	tag.Source.Start = pos
+	field.Source.Start = pos
 
 	hadEqualSign := false       // did we have an equal sign yet?
 	shouldAppendSuffix := false // should we append further spaces to the suffix instead of resetting it
@@ -72,19 +72,19 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 	mayConcatNext := false
 	mayEqualNext := false
 
-	var last *BibTagElement
+	var last *BibFieldElement
 
 	// iteratively read characters
 	for r != ',' && r != '}' {
 		switch r {
 		case '=':
 			if !mayEqualNext {
-				err = utils.NewErrorF(reader, "Unexpected \"=\" while attempting to read tag")
+				err = utils.NewErrorF(reader, "Unexpected \"=\" while attempting to read field")
 				return
 			}
 
 			if err = reader.Eat(); err != nil {
-				err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read tag")
+				err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read field")
 				return
 			}
 
@@ -103,12 +103,12 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 			mayEqualNext = false
 		case '#':
 			if !mayConcatNext {
-				err = utils.NewErrorF(reader, "Unexpected \"#\" while attempting to read tag")
+				err = utils.NewErrorF(reader, "Unexpected \"#\" while attempting to read field")
 				return
 			}
 
 			if err = reader.Eat(); err != nil {
-				err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read tag")
+				err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read field")
 				return
 			}
 
@@ -126,16 +126,16 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 			mayEqualNext = false
 		case '"':
 			if !mayStringNext {
-				err = utils.NewErrorF(reader, "Unexpected '\"' while attempting to read tag")
+				err = utils.NewErrorF(reader, "Unexpected '\"' while attempting to read field")
 				return
 			}
 
 			// append a new element
-			last = &BibTagElement{
+			last = &BibFieldElement{
 				Value:  &BibString{},
 				Suffix: &BibString{},
 			}
-			tag.Elements = append(tag.Elements, last)
+			field.Elements = append(field.Elements, last)
 
 			// read the quote and append it to the content
 			err = last.Value.readQuote(reader)
@@ -152,16 +152,16 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 
 		case '{':
 			if !mayStringNext {
-				err = utils.NewErrorF(reader, "Unexpected '{' while attempting to read tag")
+				err = utils.NewErrorF(reader, "Unexpected '{' while attempting to read field")
 				return
 			}
 
 			// append a new element
-			last = &BibTagElement{
+			last = &BibFieldElement{
 				Value:  &BibString{},
 				Suffix: &BibString{},
 			}
-			tag.Elements = append(tag.Elements, last)
+			field.Elements = append(field.Elements, last)
 
 			// read the brace and append it to the content
 			err = last.Value.readBrace(reader)
@@ -176,15 +176,15 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 			mayEqualNext = !hadEqualSign
 		default:
 			if !mayStringNext {
-				err = utils.NewErrorF(reader, "Unexpected start of literal while attempting to read tag")
+				err = utils.NewErrorF(reader, "Unexpected start of literal while attempting to read field")
 				return
 			}
 
 			// append a new element
-			last = &BibTagElement{
+			last = &BibFieldElement{
 				Value: &BibString{},
 			}
-			tag.Elements = append(tag.Elements, last)
+			field.Elements = append(field.Elements, last)
 
 			// read the literal
 			last.Suffix, err = last.Value.readLiteral(reader)
@@ -202,7 +202,7 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 		// eat all the spaces
 		s, loc, err = reader.ReadWhile(unicode.IsSpace)
 		if err != nil {
-			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read tag")
+			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read field")
 			return
 		}
 
@@ -217,34 +217,34 @@ func (tag *BibTag) readTag(reader *utils.RuneReader) (err error) {
 		// peek the next char
 		r, pos, err = reader.Peek()
 		if err != nil {
-			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read tag")
+			err = utils.WrapErrorF(reader, err, "Unexpected error while attempting to read field")
 			return
 		}
 		if pos.EOF {
-			err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read tag")
+			err = utils.NewErrorF(reader, "Unexpected end of input while attempting to read field")
 			return
 		}
 	}
 
 	// end of source
-	tag.Source.End = pos
+	field.Source.End = pos
 
-	// eat away the closing tag
-	tag.Suffix.Value = string(r)
-	tag.Suffix.Source.Start = pos
-	tag.Suffix.Source.End = pos
+	// eat away the closing field
+	field.Suffix.Value = string(r)
+	field.Suffix.Source.Start = pos
+	field.Suffix.Source.End = pos
 	reader.Eat()
 
 	// and return
 	return
 }
 
-// Write writes this BibTag into a writer
-func (tag *BibTag) Write(writer io.Writer) error {
-	if err := tag.Prefix.Write(writer); err != nil {
+// Write writes this BibField into a writer
+func (field *BibField) Write(writer io.Writer) error {
+	if err := field.Prefix.Write(writer); err != nil {
 		return err
 	}
-	for _, e := range tag.Elements {
+	for _, e := range field.Elements {
 		if err := e.Value.Write(writer); err != nil {
 			return err
 		}
@@ -252,38 +252,38 @@ func (tag *BibTag) Write(writer io.Writer) error {
 			return err
 		}
 	}
-	if err := tag.Suffix.Write(writer); err != nil {
+	if err := field.Suffix.Write(writer); err != nil {
 		return err
 	}
 	return nil
 }
 
-// Empty checks if a tag is empty
-func (tag *BibTag) Empty() bool {
-	return len(tag.Elements) == 0
+// Empty checks if a field is empty
+func (field *BibField) Empty() bool {
+	return len(field.Elements) == 0
 }
 
-// IsKeyValue checks if this BibTag is of the form 'key = value'
-func (tag *BibTag) IsKeyValue() bool {
-	return len(tag.Elements) >= 1 && tag.Elements[0].Role == KeyElementRole
+// IsKeyValue checks if this BibField is of the form 'key = value'
+func (field *BibField) IsKeyValue() bool {
+	return len(field.Elements) >= 1 && field.Elements[0].Role == KeyElementRole
 }
 
-// GetKey returns the 'key' of this BibTag entry, i.e. the first element in a 'key = value' assignment
+// GetKey returns the 'key' of this BibField entry, i.e. the first element in a 'key = value' assignment
 // if there is no key, returns nil
-func (tag *BibTag) GetKey() *BibTagElement {
-	if !tag.IsKeyValue() {
+func (field *BibField) GetKey() *BibFieldElement {
+	if !field.IsKeyValue() {
 		return nil
 	}
 
-	return tag.Elements[0]
+	return field.Elements[0]
 }
 
 // GetValue returns the value elements of this key, i.e. everything after the first element in a 'key = value' assignment
 // if the BibEntry is not of the form key == value, returns 0
-func (tag *BibTag) GetValue() []*BibTagElement {
-	if !tag.IsKeyValue() {
+func (field *BibField) GetValue() []*BibFieldElement {
+	if !field.IsKeyValue() {
 		return nil
 	}
 
-	return tag.Elements[1:]
+	return field.Elements[1:]
 }

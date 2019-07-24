@@ -37,12 +37,12 @@ func Test_readFile(t *testing.T) {
 			utils.CompressUnmarshalFileOrPanic(path.Join("testdata", "bibfile_read", tt.asset+".json.gz"), &wantFile)
 
 			if (err != nil) != false {
-				t.Errorf("BibTag.readFile() error = %v, wantErr %v", err, false)
+				t.Errorf("BibFile.readFile() error = %v, wantErr %v", err, false)
 				return
 			}
 
 			if !reflect.DeepEqual(gotFile, wantFile) {
-				t.Errorf("BibTag.readFile() = %v, want %v", gotFile, wantFile)
+				t.Errorf("BibFile.readFile() = %v, want %v", gotFile, wantFile)
 			}
 		})
 	}
