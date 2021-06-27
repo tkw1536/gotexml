@@ -1,5 +1,5 @@
 # gotextml
 
-[![Build Status](https://travis-ci.com/tkw1536/gotexml.svg?branch=master)](https://travis-ci.com/tkw1536/gotexml)
+![CI Status](https://github.com/tkw1536/gotexml/workflows/CI/badge.svg)
 
 GoTeXML is a library written in go to parse, edit, lint and format `.bib` files. 
