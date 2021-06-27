@@ -18,18 +18,16 @@ type RuneReader struct {
 	cache    rune
 }
 
-// NewRuneReaderFromString creates a new RuneReader from a string
-func NewRuneReaderFromString(s string) *RuneReader {
-	return &RuneReader{
-		Reader: bufio.NewReader(strings.NewReader(s)),
-	}
-}
-
 // NewRuneReaderFromReader creates a new RuneReader from an io.Reader
 func NewRuneReaderFromReader(rd io.Reader) *RuneReader {
 	return &RuneReader{
 		Reader: bufio.NewReader(rd),
 	}
+}
+
+// NewRuneReaderFromString creates a new RuneReader from a string
+func NewRuneReaderFromString(s string) *RuneReader {
+	return NewRuneReaderFromReader(strings.NewReader(s))
 }
 
 // Position returns the current position of the reader
@@ -40,11 +38,12 @@ func (reader *RuneReader) Position() ReaderPosition {
 
 // Read reads the next character from the input and returns it
 func (reader *RuneReader) Read() (r rune, pos ReaderPosition, err error) {
+	// tell the caller that we read the current position
 	pos.Line = reader.position.Line
 	pos.Column = reader.position.Column
 
-	// read the next rune
-	a, err := reader.readRaw()
+	// read the next rune, and handle errors!
+	r, err = reader.readRaw()
 	if err != nil {
 		if err == io.EOF {
 			pos.EOF = true
@@ -55,55 +54,43 @@ func (reader *RuneReader) Read() (r rune, pos ReaderPosition, err error) {
 		return
 	}
 
-	// we consider '\n\r' and '\r\n' special newlines that both get collapsed into just an '\n'
-	// since we might have this, we need to have to peek at the next character also
-	if a == '\n' || a == '\r' {
-		var b rune
-		b, err = reader.peekRaw()
-		// if we have an EOF next, this will be re-read
-		if err == io.EOF {
-			r = '\n'
-			pos.EOF = false
-			err = nil
+	// handle '\r\n' and '\n\r' as a special newline and normalize them into a single '\n'
+	if r == '\n' || r == '\r' {
+		// lookahead to the next character
+		var l rune
+		l, err = reader.peekRaw()
 
-			// we did have a linebreak
-			reader.position.Column = 0
-			reader.position.Line++
+		// handle errors in the lookahead
+		if err != nil {
+			if err == io.EOF {
+				// io.EOF will be re-read in
+				err = nil
 
-			return
-
-			// if we have an error, pass that along
-		} else if err != nil {
+				// we did have a linebreak
+				reader.position.Column = 0
+				reader.position.Line++
+			}
 			pos.EOF = false
 			return
 		}
 
-		// we had a real newline
-		if (a == '\n' && b == '\r') || (a == '\r' && b == '\n') {
+		// we caught a collapsed newline, and should collapse both into a single line.
+		if (r == '\n' && l == '\r') || (r == '\r' && l == '\n') {
 			reader.eatRaw() // skip the next character
 			r = '\n'
 			pos.EOF = false
 			err = nil
-
-			// we did have a linebreak
-			reader.position.Column = 0
-			reader.position.Line++
-
-			return
-		} else if a == '\n' {
-			// we did have a linebreak
-			reader.position.Column = 0
-			reader.position.Line++
-		} else {
-			reader.position.Column++
 		}
-
-	} else {
-		reader.position.Column++
 	}
 
-	// return a
-	r = a
+	// increment the position of the reader!
+	if r != '\n' {
+		reader.position.Column++
+	} else {
+		reader.position.Column = 0
+		reader.position.Line++
+	}
+
 	return
 }
 
@@ -150,10 +137,13 @@ func (reader *RuneReader) Peek() (r rune, pos ReaderPosition, err error) {
 	return
 }
 
+// ErrNoUnread is returned when a character cannot be unread
+var ErrNoUnread = errors.New("Unread: Already has a cached character")
+
 // Unread unreads a character from the input
 func (reader *RuneReader) Unread(r rune, pos ReaderPosition) error {
 	if reader.hasCache {
-		return errors.New("Cannot unread: Character already cached. ")
+		return ErrNoUnread
 	}
 
 	reader.hasCache = true
@@ -228,7 +218,7 @@ func (reader *RuneReader) ReadWhile(f func(r rune) bool) (s string, loc ReaderRa
 	// as long as there is no EOF
 	var r rune
 	p := reader.position
-	for true {
+	for {
 		loc.End = p
 		r, p, err = reader.Read()
 		if err != nil {
@@ -252,8 +242,6 @@ func (reader *RuneReader) ReadWhile(f func(r rune) bool) (s string, loc ReaderRa
 		// don't add the trailing EOF
 		builder.WriteRune(r)
 	}
-
-	return
 }
 
 // EatWhile eats runes from the RuneReader as long as f returns true
@@ -261,7 +249,7 @@ func (reader *RuneReader) ReadWhile(f func(r rune) bool) (s string, loc ReaderRa
 func (reader *RuneReader) EatWhile(f func(r rune) bool) (count int, err error) {
 	var r rune
 	var p ReaderPosition
-	for true {
+	for {
 		r, p, err = reader.Read()
 		if err != nil {
 			return
@@ -280,6 +268,4 @@ func (reader *RuneReader) EatWhile(f func(r rune) bool) (count int, err error) {
 
 		count++
 	}
-
-	return
 }
