@@ -19,6 +19,19 @@ type BibEntry struct {
 	Source utils.ReaderRange `json:"source"` // source of this BibField
 }
 
+// Return the key of this bib entry
+func (entry *BibEntry) Key() string {
+	if entry == nil || len(entry.Fields) == 0 {
+		return ""
+	}
+
+	elements := entry.Fields[0].Elements
+	if len(elements) == 0 || elements[0].Role != NormalElementRole {
+		return ""
+	}
+	return elements[0].Value.Value
+}
+
 // readEntry reads a BibEntry from reader
 // Entries end with '}' as a terminating character.
 // when err is io.EOF, no beginning entry was found and only Prefix is populated

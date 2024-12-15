@@ -1,6 +1,9 @@
 package bibliography
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 // Format represents the format used to format a Bibliography file
 type Format struct {
@@ -17,6 +20,8 @@ type Format struct {
 	AddTrailingComma bool // when set to true, add a trailing comma to all entries
 
 	FileSeperator string // seperator between different entries in a file
+
+	SortEntries bool // if true, sort entries by their key
 }
 
 // EntryKindFormat represents how to format the kind of an entry
@@ -178,5 +183,23 @@ func (format *Format) FormatFile(file *BibFile) {
 			e.Prefix.Value = prefix
 		}
 	}
+
+	if format == nil || format.SortEntries {
+		format.SortFile(file)
+	}
+
 	file.Suffix.Value = "\n" // hard-code end of file
+}
+
+func (format *Format) SortFile(file *BibFile) {
+	// get the keys for each entry
+	keys := make(map[*BibEntry]string, len(file.Entries))
+	for _, entry := range file.Entries {
+		keys[entry] = entry.Key()
+	}
+
+	// and sort by the keys!
+	sort.Slice(file.Entries, func(i, j int) bool {
+		return keys[file.Entries[i]] < keys[file.Entries[j]]
+	})
 }
