@@ -102,8 +102,7 @@ func TestBibEntry_Write(t *testing.T) {
 			var entry BibEntry
 			utils.UnmarshalFileOrPanic(path.Join("testdata", "bibentry_read", tt.asset+".json"), &entry)
 			// load the string we want
-			var wantString string
-			wantString = utils.ReadFileOrPanic(path.Join("testdata", "bibentry_read", tt.asset+".bib"))
+			wantString := utils.ReadFileOrPanic(path.Join("testdata", "bibentry_read", tt.asset+".bib"))
 			// write the buffer
 			writer := &bytes.Buffer{}
 			if err := entry.Write(writer); (err != nil) != false {

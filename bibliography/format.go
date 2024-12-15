@@ -5,21 +5,21 @@ import (
 	"strings"
 )
 
-// Format represents the format used to format a Bibliography file
-type Format struct {
-	TagSpace string // spaces around individual parts of Tags
+// Formatter formats parts of a [BibFile]
+type Formatter struct {
+	FieldSpace string // spaces around individual parts of Tags
 
-	FirstTagSeperator string // the first seperator
-	TagSeparator      string // seperation between every tag
-	EntrySuffix       string // a suffix before a closing entry
+	FirstFieldSeparator string // the first separators
+	FieldSeparator      string // separation between every field
+	EntrySuffix         string // a suffix before a closing entry
 
 	EntryKind       EntryKindFormat // how to handle entry kinds
 	EntryKindSuffix string
 
-	RemoveEmptyTags  bool // when set to true, remove entry empty tags
-	AddTrailingComma bool // when set to true, add a trailing comma to all entries
+	RemoveEmptyFields bool // when set to true, remove entry empty tags
+	AddTrailingComma  bool // when set to true, add a trailing comma to all entries
 
-	FileSeperator string // seperator between different entries in a file
+	FileSeparator string // separator between different entries in a file
 
 	SortEntries bool // if true, sort entries by their key
 }
@@ -34,87 +34,43 @@ const (
 	EntryKindLowercase                        // turn it to lower case
 )
 
-func (format *Format) tagSpace() string {
-	if format == nil {
-		return " "
-	}
-	return format.TagSpace
+// DefaultFormatter is the default formatter.
+var DefaultFormatter = Formatter{
+	FieldSpace:          " ",
+	FirstFieldSeparator: "",
+	FieldSeparator:      "\n    ",
+	EntrySuffix:         "\n",
+	EntryKind:           EntryKindLowercase,
+	EntryKindSuffix:     "",
+	FileSeparator:       "\n\n",
+	RemoveEmptyFields:   true,
+	SortEntries:         true,
 }
 
-func (format *Format) firstTagSeperator() string {
-	if format == nil {
-		return ""
-	}
-	return format.FirstTagSeperator
-}
-
-func (format *Format) tagSeparator() string {
-	if format == nil {
-		return "\n    "
-	}
-	return format.TagSeparator
-}
-
-func (format *Format) entrySuffix() string {
-	if format == nil {
-		return "\n"
-	}
-	return format.EntrySuffix
-}
-
-func (format *Format) entryKind() EntryKindFormat {
-	if format == nil {
-		return EntryKindLowercase
-	}
-	return format.EntryKind
-}
-
-func (format *Format) entryKindSuffix() string {
-	if format == nil {
-		return ""
-	}
-	return format.EntryKindSuffix
-}
-
-func (format *Format) fileSeperator() string {
-	if format == nil {
-		return "\n\n"
-	}
-	return format.FileSeperator
-}
-
-func (format *Format) removeEmptyTags() bool {
-	if format == nil {
-		return true
-	}
-	return format.RemoveEmptyTags
-}
-
-// FormatTag formats a Tag using these options
-func (format *Format) FormatTag(tag *BibField) {
-	space := format.tagSpace()
-
-	// Prefix and suffix set by FormatEntry()
-	tag.Prefix.Value = ""
-
-	for _, e := range tag.Elements {
-		switch e.Role {
-		case NormalElementRole:
-			e.Suffix.Value = ""
-		case KeyElementRole:
-			e.Suffix.Value = space + "=" + space
-		case TermElementRole:
-			e.Suffix.Value = space + "#" + space
+// Format formats a file according to the options set.
+func (format Formatter) Format(file *BibFile) {
+	prefix := format.FileSeparator
+	for i, e := range file.Entries {
+		format.entry(e)
+		if i != 0 {
+			e.Prefix.Value = prefix
 		}
 	}
+
+	// sort if requested
+	if format.SortEntries {
+		format.sort(file)
+	}
+
+	file.Suffix.Value = "\n" // hard-code end of file
 }
 
-// FormatEntry formats an entry using these options
-func (format *Format) FormatEntry(entry *BibEntry) {
+// entry formats the given entry
+func (format Formatter) entry(entry *BibEntry) {
 	entry.Prefix.Value = ""
 
 	// format the kind
-	switch format.entryKind() {
+	switch format.EntryKind {
 	case EntryKindLowercase:
 		entry.Kind.Value = strings.ToLower(entry.Kind.Value)
 	case EntryKindUppercase:
@@ -122,11 +78,11 @@ func (format *Format) FormatEntry(entry *BibEntry) {
 	}
 
 	// set the entry kind suffix
-	entry.KindSuffix.Value = format.entryKindSuffix()
-	seperator := format.tagSeparator()
+	entry.KindSuffix.Value = format.EntryKindSuffix
+	TagSeparator := format.FieldSeparator
 
 	// if we want to remove empty tags, remove them
-	if format.removeEmptyTags() {
+	if format.RemoveEmptyFields {
 		filteredTags := entry.Fields[:0]
 		for _, t := range entry.Fields {
 			if !t.Empty() {
@@ -141,11 +97,11 @@ func (format *Format) FormatEntry(entry *BibEntry) {
 
 	// format the tags
 	for i, t := range entry.Fields {
-		format.FormatTag(t)
+		format.field(t)
 		if i == 0 {
-			t.Prefix.Value = format.firstTagSeperator()
+			t.Prefix.Value = format.FirstFieldSeparator
 		} else {
-			t.Prefix.Value = seperator
+			t.Prefix.Value = TagSeparator
 		}
 	}
 
@@ -165,37 +121,40 @@ func (format *Format) FormatEntry(entry *BibEntry) {
 	if !lastTag.Empty() {
 		last = len(lastTag.Elements) - 1
 		if last != -1 {
-			lastTag.Elements[last].Suffix.Value = format.entrySuffix()
+			lastTag.Elements[last].Suffix.Value = format.EntrySuffix
 		}
 	} else {
-		lastTag.Prefix.Value = format.entrySuffix()
+		lastTag.Prefix.Value = format.EntrySuffix
 	}
 
 }
 
-// FormatFile formats a BibFile entry according to these options
-func (format *Format) FormatFile(file *BibFile) {
-	// set the seperator
-	prefix := format.fileSeperator()
-	for i, e := range file.Entries {
-		format.FormatEntry(e)
-		if i != 0 {
-			e.Prefix.Value = prefix
+// field formats a single field
+func (format Formatter) field(tag *BibField) {
+	space := format.FieldSpace
+
+	// Prefix and suffix set by FormatEntry()
+	tag.Prefix.Value = ""
+
+	for _, e := range tag.Elements {
+		switch e.Role {
+		case NormalElementRole:
+			e.Suffix.Value = ""
+		case KeyElementRole:
+			e.Suffix.Value = space + "=" + space
+		case TermElementRole:
+			e.Suffix.Value = space + "#" + space
 		}
 	}
-
-	if format == nil || format.SortEntries {
-		format.SortFile(file)
-	}
-
-	file.Suffix.Value = "\n" // hard-code end of file
 }
 
-func (format *Format) SortFile(file *BibFile) {
+// sort sorts the entries in the given file.
+// This will sort even if [SortEntries] is unset.
+func (format Formatter) sort(file *BibFile) {
 	// get the keys for each entry
 	keys := make(map[*BibEntry]string, len(file.Entries))
 	for _, entry := range file.Entries {
-		keys[entry] = entry.Key()
+		keys[entry] = entry.Label()
 	}
 
 	// and sort by the keys!

@@ -1,5 +1,5 @@
 module github.com/tkw1536/gotexml
 
-go 1.12
+go 1.23
 
-require github.com/pkg/errors v0.8.1
+require github.com/pkg/errors v0.9.1

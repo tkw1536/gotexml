@@ -81,8 +81,7 @@ func TestBibFile_Write(t *testing.T) {
 			utils.CompressUnmarshalFileOrPanic(path.Join("testdata", "bibfile_read", tt.asset+".json.gz"), &file)
 
 			// load the string we want
-			var wantString string
-			wantString = utils.ReadFileOrPanic(path.Join("testdata", "bibfile_read", tt.asset+".bib"))
+			wantString := utils.ReadFileOrPanic(path.Join("testdata", "bibfile_read", tt.asset+".bib"))
 
 			// write the buffer
 			writer := &bytes.Buffer{}

@@ -29,7 +29,7 @@ func (file *BibFile) readFile(reader *utils.RuneReader) (err error) {
 
 	// keep reading entries
 
-	for true {
+	for {
 		entry := &BibEntry{}
 		err = entry.readEntry(reader)
 		if err == io.EOF { // bail out if there are none left

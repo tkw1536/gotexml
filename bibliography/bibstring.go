@@ -10,10 +10,10 @@ import (
 
 // BibString represents a string along with a reference to a BibFile
 type BibString struct {
-	Kind  BibStringKind `json:"kind"`  // the type of Bibstring this is
-	Value string        `json:"value"` // the value of this bibstring
+	Kind  BibStringKind `json:"kind"`  // the type of BibString this is
+	Value string        `json:"value"` // the value of this BibString
 
-	// the readerrange that represents this token inside the Source file
+	// the readerRange that represents this token inside the Source file
 	Source utils.ReaderRange `json:"source"`
 }
 
@@ -22,7 +22,7 @@ type BibStringKind string
 
 // kind of BibStrings that occur in the code
 const (
-	BibStringOther     BibStringKind = ""          // any other kind of bibstring, mostly spaces and un-finished data
+	BibStringOther     BibStringKind = ""          // any other kind of BibString, mostly spaces and un-finished data
 	BibStringLiteral   BibStringKind = "LITERAL"   // BibTex Literals (e.g. example)
 	BibStringQuote     BibStringKind = "QUOTE"     // BibTex Quotes (e.g. "example")
 	BibStringBracket   BibStringKind = "BRACKET"   // anything in BibTex Brackets, e.g. {ExAmPle}
@@ -84,7 +84,7 @@ func (bs *BibString) readLiteral(reader *utils.RuneReader) (space *BibString, rr
 
 		// if we did not add any more characters, then we should use the source for the previous character
 		if len(cache) == 0 {
-			litSource.Start = pos
+			// litSource.Start = pos // never used
 			litSource.End = pos
 		}
 

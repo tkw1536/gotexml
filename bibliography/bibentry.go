@@ -19,8 +19,9 @@ type BibEntry struct {
 	Source utils.ReaderRange `json:"source"` // source of this BibField
 }
 
-// Return the key of this bib entry
-func (entry *BibEntry) Key() string {
+// Label returns the label used for citing this BibEntry.
+// If the entry has no label, returns the empty string.
+func (entry *BibEntry) Label() string {
 	if entry == nil || len(entry.Fields) == 0 {
 		return ""
 	}
@@ -94,7 +95,7 @@ func (entry *BibEntry) readEntry(reader *utils.RuneReader) (err error) {
 
 	// continously read fields from this entry
 	// until we have an io.EOF error reported
-	for true {
+	for {
 		// read the next field
 		f := &BibField{}
 		err = f.readField(reader)

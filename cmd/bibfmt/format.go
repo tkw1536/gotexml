@@ -47,12 +47,10 @@ func main() {
 		panic(err)
 	}
 
-	// format the file
-	// TODO: read options from the command line
-	var format *bibliography.Format
-	format.FormatFile(file)
+	// format the file using the default formatter
+	bibliography.DefaultFormatter.Format(file)
 
-	// and write out the formated file
+	// and write out the formatted file
 	if err := file.Write(outWriter); err != nil {
 		panic(err)
 	}
